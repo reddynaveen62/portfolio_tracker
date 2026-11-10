@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Net Worth & Portfolio Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-indigo-700 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-indigo-700 p-2 rounded-lg font-bold text-xl"><i class="fa-solid fa-landmark font-bold"></i></div>
+                <div>
+                    <h1 class="text-2xl font-bold">WealthPulse</h1>
+                    <p class="text-xs text-indigo-200">Total Net Worth & Family Asset Tracker</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="bg-indigo-900/60 p-1 rounded-lg flex space-x-1">
+                    <button onclick="setMember('combined')" id="btn-combined" class="px-3 py-1.5 text-xs font-medium rounded-md transition bg-white text-indigo-800 shadow">Combined</button>
+                    <button onclick="setMember('self')" id="btn-self" class="px-3 py-1.5 text-xs font-medium rounded-md transition text-indigo-200 hover:text-white">Self</button>
+                    <button onclick="setMember('spouse')" id="btn-spouse" class="px-3 py-1.5 text-xs font-medium rounded-md transition text-indigo-200 hover:text-white">Spouse</button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="loadFromDrive()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center space-x-1 shadow"><i class="fa-brands fa-google-drive"></i><span>Load Drive</span></button>
+                    <button onclick="saveToDrive()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center space-x-1 shadow"><i class="fa-solid fa-cloud-arrow-up"></i><span>Save Drive</span></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+
+        <!-- 1. NET WORTH AT A GLANCE -->
+        <section>
+            <div class="bg-gradient-to-r from-indigo-700 to-indigo-500 text-white rounded-2xl p-6 shadow">
+                <p class="text-xs uppercase tracking-wider text-indigo-200">Your net worth today</p>
+                <h2 id="hero-networth" class="text-4xl font-bold mt-1">₹0</h2>
+                <p id="hero-sub" class="text-sm text-indigo-100 mt-1"></p>
+            </div>
+            <div id="hero-tiles" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-3"></div>
+        </section>
+
+        <!-- 2. WHERE YOUR MONEY SITS -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div>
+                <h3 class="font-bold text-slate-800 text-lg"><i class="fa-solid fa-chart-pie text-indigo-600 mr-2"></i>Where your money sits</h3>
+                <p class="text-xs text-slate-500">Every holding grouped into one asset class. "New money" is the share of your monthly contributions going into that class.</p>
+            </div>
+            <div id="alloc-stack" class="flex h-4 w-full rounded-full overflow-hidden bg-slate-100"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-center">
+                <div class="lg:col-span-2 overflow-x-auto">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="p-2.5 font-semibold">Asset class</th>
+                                <th class="p-2.5 font-semibold text-right">Value</th>
+                                <th class="p-2.5 font-semibold text-right">% of net worth</th>
+                                <th class="p-2.5 font-semibold text-right">New money %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alloc-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-56 h-56 relative"><canvas id="allocationChart"></canvas></div>
+                    <div class="w-full h-28 mt-3"><canvas id="memberChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. WHAT TO LOOK AT NEXT -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500 p-5 space-y-3">
+            <div>
+                <h3 class="font-bold text-slate-800 text-lg"><i class="fa-solid fa-compass text-amber-500 mr-2"></i>What to look at next</h3>
+                <p class="text-xs text-slate-500">A guide that reads your own numbers and links each point to its source. These are prompts to think about, not financial advice. Your goals, age and expenses matter more than any rule.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <label for="expense-input" class="text-xs font-semibold text-slate-700">Your monthly household expenses (₹):</label>
+                <input type="number" id="expense-input" min="0" placeholder="e.g. 60000" oninput="setExpense(this.value)" class="w-36 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm outline-none">
+                <span class="text-[11px] text-slate-500">Used only to work out how many months your cash would last. Stays in this browser.</span>
+            </div>
+            <div id="insights" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            <div class="text-[11px] text-slate-500 border-t border-slate-200 pt-3 space-y-1">
+                <p><b>About the sources:</b> SEBI's investor education material explains principles such as asset allocation, diversification and setting goals, but it does not set target percentages for an individual. The numbers used above (for example 3 to 6 months of expenses, 30% in one holding) are common conventions from investor education material, not SEBI rules. Reviewed 10 Nov 2026; pages and guidance can change.</p>
+                <p>
+                    <a class="text-indigo-600 hover:underline" href="https://investor.sebi.gov.in/" target="_blank" rel="noopener">SEBI Investor portal (incl. financial health check-up)</a> ·
+                    <a class="text-indigo-600 hover:underline" href="https://www.sebi.gov.in/sebi_data/attachdocs/jul-2025/1753168086737.pdf" target="_blank" rel="noopener">SEBI speech on asset allocation (PDF)</a> ·
+                    <a class="text-indigo-600 hover:underline" href="https://nsdl.co.in/downloadables/ppt/Presentation_on_Understanding_Different_Asset_Classes.pdf" target="_blank" rel="noopener">Understanding asset classes (NSDL, PDF)</a> ·
+                    <a class="text-indigo-600 hover:underline" href="https://mutualfund.adityabirlacapital.com/investor-education/our-sections/read/samriddhi-volume-8-edition-3" target="_blank" rel="noopener">Emergency fund and diversification (ABSL MF investor education)</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- MARKET ASSETS -->
+        <section class="space-y-4">
+            <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center space-x-2">
+                    <h3 class="font-bold text-slate-800 text-lg"><i class="fa-solid fa-chart-line text-indigo-600 mr-2"></i>Mutual Funds & Market Holdings</h3>
+                    <span id="market-view-badge" class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Viewing: Combined</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="upload-member" class="bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg px-2.5 py-2 outline-none">
+                        <option value="Self">For: Self</option>
+                        <option value="Spouse">For: Spouse</option>
+                    </select>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+                    <button onclick="document.getElementById('excelFileInput').click()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow"><i class="fa-solid fa-file-excel"></i><span>Import Groww Data</span></button>
+                    <button onclick="openAddModal('Mutual Fund')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow"><i class="fa-solid fa-plus"></i><span>Add</span></button>
+                </div>
+            </div>
+            <div id="market-tiles" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-3.5 font-semibold">Scheme / Stock Name</th>
+                                <th class="p-3.5 font-semibold">Member</th>
+                                <th class="p-3.5 font-semibold">Asset class</th>
+                                <th class="p-3.5 font-semibold text-right">Units / Qty</th>
+                                <th class="p-3.5 font-semibold text-right">Purchase NAV (₹)</th>
+                                <th class="p-3.5 font-semibold text-right">Current NAV (₹)</th>
+                                <th class="p-3.5 font-semibold text-right">Total Current Value</th>
+                                <th class="p-3.5 font-semibold text-right">Returns</th>
+                                <th class="p-3.5 font-semibold text-center">SIP (Mo.)</th>
+                                <th class="p-3.5 font-semibold text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- PERSONAL ASSETS -->
+        <section class="space-y-4 pt-4">
+            <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-600">
+                <div class="flex items-center space-x-2">
+                    <h3 class="font-bold text-slate-800 text-lg"><i class="fa-solid fa-building-columns text-emerald-600 mr-2"></i>Personal Assets, Govt Schemes & Liquid Cash</h3>
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Fixed / Cash / Property</span>
+                </div>
+                <button onclick="openAddModal('Personal')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow"><i class="fa-solid fa-plus"></i><span>Add</span></button>
+            </div>
+            <div id="personal-tiles" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-3.5 font-semibold">Asset Description</th>
+                                <th class="p-3.5 font-semibold">Member</th>
+                                <th class="p-3.5 font-semibold">Category</th>
+                                <th class="p-3.5 font-semibold text-right">Invested Capital (₹)</th>
+                                <th class="p-3.5 font-semibold text-right">Current Valuation (₹)</th>
+                                <th class="p-3.5 font-semibold text-right">Appreciation / Gain</th>
+                                <th class="p-3.5 font-semibold text-center">Monthly Contribution</th>
+                                <th class="p-3.5 font-semibold text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="personal-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add / Edit Asset Modal -->
+    <div id="add-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 id="modal-title" class="text-lg font-bold text-slate-900">Add Asset</h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="add-form" onsubmit="handleFormSubmit(event)" class="space-y-3">
+                <input type="hidden" id="edit-asset-id" value="">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Portfolio Member</label>
+                    <select id="asset-member" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none"><option value="Self">Self</option><option value="Spouse">Spouse</option></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Asset Category</label>
+                    <select id="asset-category" onchange="toggleCategoryFields(this.value)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                        <option value="Mutual Fund">Mutual Fund</option>
+                        <option value="Stock">Stock / Equity</option>
+                        <option value="NPS">NPS (National Pension System)</option>
+                        <option value="EPF">EPF (Employee Provident Fund)</option>
+                        <option value="PPF">PPF (Public Provident Fund)</option>
+                        <option value="SSY">SSY (Sukanya Samriddhi Yojana)</option>
+                        <option value="Liquid Cash / Savings">Liquid Cash / Emergency Fund</option>
+                        <option value="Real Estate - Land">Real Estate - Land Plot</option>
+                        <option value="Real Estate - House">Real Estate - House / Flat</option>
+                        <option value="Fixed Deposit / Debt">Fixed Deposit / Debt</option>
+                        <option value="Gold / Precious Metals">Gold / Precious Metals</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Asset class (Auto reads the fund's official category)</label>
+                    <select id="asset-class" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                        <option value="">Auto</option>
+                        <option>Equity</option><option>Multi-asset</option><option>NPS</option><option>Govt Schemes</option>
+                        <option>Debt &amp; Fixed</option><option>Gold</option><option>Cash</option><option>Real Estate</option>
+                    </select>
+                    <input type="hidden" id="asset-category-raw" value="">
+                </div>
+                <div id="mf-search-group" class="relative">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Search Mutual Fund (Auto-fills Current NAV)</label>
+                    <input type="text" id="mf-search-input" placeholder="Type scheme name..." oninput="searchMutualFunds(this.value)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                    <div id="mf-results" class="absolute left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto z-20 hidden"></div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Asset Description / Name</label>
+                    <input type="text" id="asset-name" required placeholder="e.g. PPF Account, HDFC Bank Emergency Fund..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div id="units-container">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Units / Quantity</label>
+                        <input type="number" step="any" id="asset-units" value="1" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label id="lbl-purchase-price" class="block text-xs font-semibold text-slate-700 mb-1">Invested Amount / Buy Price (₹)</label>
+                        <input type="number" step="any" id="asset-purchase-price" placeholder="0.00" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label id="lbl-current-nav" class="block text-xs font-semibold text-slate-700 mb-1">Current Valuation / NAV (₹)</label>
+                    <input type="number" step="any" id="asset-current-nav" required placeholder="0.00" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Monthly Contribution / SIP (₹) [0 if none]</label>
+                    <input type="number" step="any" id="asset-sip" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeAddModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                    <button type="submit" id="btn-submit-form" class="px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow">Save Asset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 👉 PASTE YOUR GOOGLE OAUTH CLIENT ID HERE:
+        const CLIENT_ID = '512606275516-nevi49mv6btshcgmo7841fi6l0hifupf.apps.googleusercontent.com';
+
+        let portfolio = JSON.parse(localStorage.getItem('wealthpulse_portfolio')) || [
+            { id: '1', name: 'Parag Parikh Flexi Cap Fund', member: 'Self', type: 'Mutual Fund', units: 1250.45, price: 78.50, currentNav: 85.20, sip: 10000 },
+            { id: '2', name: 'ICICI Multi Asset Allocation Fund', member: 'Self', type: 'Mutual Fund', units: 5.821, price: 858.98, currentNav: 901.84, sip: 0 },
+            { id: '3', name: 'NPS Tier-1 Account', member: 'Self', type: 'NPS', units: 1, price: 350000, currentNav: 420000, sip: 5000 },
+            { id: '4', name: 'EPF Balance', member: 'Self', type: 'EPF', units: 1, price: 650000, currentNav: 720000, sip: 12500 },
+            { id: '5', name: 'HDFC Savings - Emergency Fund', member: 'Self', type: 'Liquid Cash / Savings', units: 1, price: 300000, currentNav: 300000, sip: 10000 },
+            { id: '6', name: 'PPF Account', member: 'Spouse', type: 'PPF', units: 1, price: 480000, currentNav: 480000, sip: 12500 },
+            { id: '7', name: 'Residential Plot - Gachibowli', member: 'Self', type: 'Real Estate - Land', units: 1, price: 4200000, currentNav: 4200000, sip: 0 }
+        ];
+
+        let currentMemberFilter = 'combined';
+        let monthlyExpense = Number(localStorage.getItem('wealthpulse_expense')) || 0;
+
+        // Each guide point links to the page that backs it. Edit here to add or swap sources.
+        const GUIDE_SOURCES = {
+            allocation: ['SEBI: asset allocation matters more than stock picking or timing', 'https://www.sebi.gov.in/sebi_data/attachdocs/jul-2025/1753168086737.pdf'],
+            classes:    ['Understanding asset classes (NSDL)', 'https://nsdl.co.in/downloadables/ppt/Presentation_on_Understanding_Different_Asset_Classes.pdf'],
+            emergency:  ['Emergency fund guidance (ABSL MF investor education)', 'https://mutualfund.adityabirlacapital.com/investor-education/our-sections/read/samriddhi-volume-8-edition-3'],
+            planning:   ['SEBI Investor portal', 'https://investor.sebi.gov.in/']
+        };
+        function srcFor(title) {
+            if (/emergency|cash/i.test(title)) return GUIDE_SOURCES.emergency;
+            if (/property|growth assets|a month goes/i.test(title)) return GUIDE_SOURCES.allocation;
+            if (/holding|gold/i.test(title)) return GUIDE_SOURCES.classes;
+            return GUIDE_SOURCES.planning;
+        }
+        function setExpense(v) {
+            monthlyExpense = Math.max(0, Number(v) || 0);
+            localStorage.setItem('wealthpulse_expense', String(monthlyExpense));
+            renderDashboard();
+        }
+
+        let allocationChartInstance = null;
+        let memberChartInstance = null;
+        let tokenClient;
+        let targetFileId = null;
+        let gapiInitialized = false;
+
+        // ---------- Asset classes (assigned automatically, nothing to configure) ----------
+        const CLASSES = [
+            { k: 'Equity',        c: '#4f46e5', d: 'Stocks and equity mutual funds. Highest long-term growth, but can fall sharply.' },
+            { k: 'Multi-asset',   c: '#06b6d4', d: 'Funds that mix equity, debt and gold in one.' },
+            { k: 'NPS',           c: '#8b5cf6', d: 'Retirement account. Locked until retirement.' },
+            { k: 'Govt Schemes',  c: '#10b981', d: 'EPF, PPF, SSY. Safe, steady, low volatility.' },
+            { k: 'Debt & Fixed',  c: '#64748b', d: 'FDs and debt or arbitrage funds. Stable, modest returns.' },
+            { k: 'Gold',          c: '#f59e0b', d: 'Gold and precious metals. A hedge when markets fall.' },
+            { k: 'Cash',          c: '#0ea5e9', d: 'Savings and emergency fund. Available instantly.' },
+            { k: 'Real Estate',   c: '#ec4899', d: 'Land and property. Large, slow to sell, no monthly income.' }
+        ];
+
+        // Works out the class from text (the official AMFI category, or the fund name as a fallback)
+        function classFromText(s) {
+            s = (s || '').toLowerCase();
+            if (!s) return null;
+            if (/gold|silver/.test(s)) return 'Gold';
+            if (/arbitrage/.test(s)) return 'Debt & Fixed';
+            if (/multi asset|balanced|hybrid|asset allocation|equity savings|aggressive|conservative|advantage/.test(s)) return 'Multi-asset';
+            if (/debt|liquid|money market|gilt|g-sec|sdl|overnight|bond|duration|credit risk|floater|banking & psu|banking and psu|corporate|ultra short|short term|treasury|income/.test(s)) return 'Debt & Fixed';
+            if (/equity|elss|index|etf|flexi|large|mid cap|small cap|focused|value|contra|dividend yield|sectoral|thematic|fof/.test(s)) return 'Equity';
+            return null;
+        }
+
+        function classOf(item) {
+            if (item.assetClass) return item.assetClass;   // your manual choice always wins
+            const t = item.type, n = (item.name || '').toLowerCase();
+            if (t === 'Stock') return 'Equity';
+            if (t === 'Mutual Fund') {
+                let c = classFromText(item.category);       // official AMFI category from mfapi.in
+                // Index funds and FoFs can hold bonds or gold: the name settles it
+                if (!c || c === 'Equity') { const byName = classFromText(n); if (byName && byName !== 'Equity') c = byName; }
+                return c || 'Equity';
+            }
+            if (t === 'NPS') return 'NPS';
+            if (['EPF', 'PPF', 'SSY'].includes(t)) return 'Govt Schemes';
+            if (t.includes('Liquid Cash')) return 'Cash';
+            if (t.includes('Real Estate')) return 'Real Estate';
+            if (t.includes('Gold')) return 'Gold';
+            return 'Debt & Fixed';
+        }
+
+        // ---------- Helpers ----------
+        const fmt = n => '₹' + Math.round(n).toLocaleString('en-IN');
+        const fmtC = n => Math.abs(n) >= 1e7 ? '₹' + (n / 1e7).toFixed(2) + ' Cr' : Math.abs(n) >= 1e5 ? '₹' + (n / 1e5).toFixed(2) + ' L' : fmt(n);
+        const pctOf = (a, b) => b > 0 ? (a / b) * 100 : 0;
+
+        function isMarketAsset(type) { return type === 'Mutual Fund' || type === 'Stock'; }
+
+        function calc(item) {
+            const units = item.units || 1;
+            const ep = (item.price && item.price > 0) ? item.price : (item.currentNav || 0);
+            const mk = isMarketAsset(item.type);
+            const inv = mk ? units * ep : ep;
+            const cur = mk ? units * (item.currentNav || ep) : (item.currentNav || ep);
+            return { units, ep, inv, cur, ret: cur - inv, retPct: pctOf(cur - inv, inv) };
+        }
+
+        function tiles(id, list, color) {
+            document.getElementById(id).innerHTML = list.map(t => `
+                <div class="bg-${color}-50/60 border border-${color}-100 p-3.5 rounded-xl shadow-sm">
+                    <p class="text-[11px] font-semibold text-${color}-700 uppercase">${t[0]}</p>
+                    <h4 class="text-lg font-bold ${t[2] || 'text-slate-900'} mt-0.5">${t[1]}</h4>
+                    ${t[3] ? `<span class="text-xs text-slate-500">${t[3]}</span>` : ''}
+                </div>`).join('');
+        }
+
+        // ---------- Google Drive ----------
+        window.gapiLoaded = function() {
+            gapi.load('client', async () => {
+                await gapi.client.init({ discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
+                gapiInitialized = true;
+                tryAutoLoadDrive();
+            });
+        };
+        window.gisLoaded = function() {
+            if (!CLIENT_ID || CLIENT_ID.includes('YOUR_CLIENT_ID')) return;
+            tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: 'https://www.googleapis.com/auth/drive.file', callback: '' });
+            tryAutoLoadDrive();
+        };
+        // Looks up the official AMFI category (via mfapi.in) for funds that don't have one yet
+        async function backfillCategories() {
+            let changed = false;
+            for (const item of portfolio) {
+                if (item.type !== 'Mutual Fund' || item.category || item.catTried) continue;
+                try {
+                    const q = (item.name || '').split(' - ')[0].trim();
+                    if (q.length < 3) continue;
+                    const s = await (await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(q)}`)).json();
+                    item.catTried = true; changed = true;
+                    if (Array.isArray(s) && s.length) {
+                        const hit = s.find(x => x.schemeName.toLowerCase().includes(q.toLowerCase())) || s[0];
+                        const d = await (await fetch(`https://api.mfapi.in/mf/${hit.schemeCode}/latest`)).json();
+                        if (d && d.meta && d.meta.scheme_category) item.category = d.meta.scheme_category;
+                    }
+                } catch (e) { console.log('Category lookup skipped for', item.name); }
+            }
+            if (changed) saveAndRefresh();
+        }
+
+        window.onload = function() {
+            if (monthlyExpense > 0) document.getElementById('expense-input').value = monthlyExpense;
+            renderDashboard();
+            backfillCategories();
+        };
+
+        function tryAutoLoadDrive() {
+            if (!gapiInitialized || !tokenClient || !CLIENT_ID || CLIENT_ID.includes('YOUR_CLIENT_ID')) return;
+            tokenClient.callback = async (resp) => { if (!resp.error) silentLoadFromDrive(); };
+            try { tokenClient.requestAccessToken({ prompt: 'none' }); } catch (e) { console.log('Auto-auth prompt required.'); }
+        }
+
+        async function silentLoadFromDrive() {
+            try {
+                const response = await gapi.client.drive.files.list({ q: `name = 'portfolio.json' and trashed = false`, fields: 'files(id, name)' });
+                const files = response.result.files;
+                if (files && files.length > 0) {
+                    targetFileId = files[0].id;
+                    const fileData = await gapi.client.drive.files.get({ fileId: targetFileId, alt: 'media' });
+                    if (fileData && fileData.result) { portfolio = fileData.result; saveAndRefresh(); }
+                }
+            } catch (err) { console.log('Silent load skipped.'); }
+        }
+
+        function handleAuth(callback) {
+            if (!CLIENT_ID || CLIENT_ID.includes('YOUR_CLIENT_ID')) { alert('Please update your CLIENT_ID variable in the HTML code first.'); return; }
+            if (!tokenClient) gisLoaded();
+            tokenClient.callback = async (resp) => { if (resp.error) throw resp; await callback(); };
+            tokenClient.requestAccessToken({ prompt: gapi.client.getToken() === null ? 'consent' : '' });
+        }
+
+        async function loadFromDrive() {
+            handleAuth(async () => {
+                const response = await gapi.client.drive.files.list({ q: `name = 'portfolio.json' and trashed = false`, fields: 'files(id, name)' });
+                const files = response.result.files;
+                if (files && files.length > 0) {
+                    targetFileId = files[0].id;
+                    const fileData = await gapi.client.drive.files.get({ fileId: targetFileId, alt: 'media' });
+                    portfolio = fileData.result;
+                    saveAndRefresh();
+                    alert('Portfolio successfully loaded from Google Drive!');
+                } else { alert('No portfolio.json file found in your Google Drive.'); }
+            });
+        }
+
+        async function saveToDrive() {
+            handleAuth(async () => {
+                const fileContent = JSON.stringify(portfolio, null, 2);
+                const auth = { Authorization: `Bearer ${gapi.client.getToken().access_token}` };
+                if (targetFileId) {
+                    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${targetFileId}?uploadType=media`, { method: 'PATCH', headers: { ...auth, 'Content-Type': 'application/json' }, body: fileContent });
+                    alert('Portfolio successfully updated in Google Drive!');
+                } else {
+                    const form = new FormData();
+                    form.append('metadata', new Blob([JSON.stringify({ name: 'portfolio.json', mimeType: 'application/json' })], { type: 'application/json' }));
+                    form.append('file', new Blob([fileContent], { type: 'application/json' }));
+                    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: auth, body: form });
+                    targetFileId = (await res.json()).id;
+                    alert('Portfolio file created and saved to Google Drive!');
+                }
+            });
+        }
+
+        // ---------- State ----------
+        function setMember(member) {
+            currentMemberFilter = member;
+            ['combined', 'self', 'spouse'].forEach(m => {
+                document.getElementById(`btn-${m}`).className = m === member
+                    ? "px-3 py-1.5 text-xs font-medium rounded-md transition bg-white text-indigo-800 shadow"
+                    : "px-3 py-1.5 text-xs font-medium rounded-md transition text-indigo-200 hover:text-white";
+            });
+            document.getElementById('market-view-badge').innerText = `Viewing: ${member.charAt(0).toUpperCase() + member.slice(1)}`;
+            renderDashboard();
+        }
+
+        function saveAndRefresh() {
+            localStorage.setItem('wealthpulse_portfolio', JSON.stringify(portfolio));
+            renderDashboard();
+        }
+
+        // ---------- Dashboard ----------
+        function renderDashboard() {
+            const marketTbody = document.getElementById('market-table-body');
+            const personalTbody = document.getElementById('personal-table-body');
+            marketTbody.innerHTML = '';
+            personalTbody.innerHTML = '';
+
+            const filtered = currentMemberFilter === 'combined' ? portfolio : portfolio.filter(i => i.member.toLowerCase() === currentMemberFilter);
+
+            let tot = { inv: 0, cur: 0, sip: 0 }, mk = { inv: 0, cur: 0, sip: 0 }, pe = { inv: 0, cur: 0, sip: 0 };
+            const classVal = {}, classSip = {};
+            CLASSES.forEach(c => { classVal[c.k] = 0; classSip[c.k] = 0; });
+            let selfNet = 0, spouseNet = 0, mkCount = 0, peCount = 0;
+
+            portfolio.forEach(item => { const c = calc(item).cur; if (item.member.toLowerCase() === 'self') selfNet += c; else spouseNet += c; });
+
+            filtered.forEach(item => {
+                const r = calc(item), sip = Number(item.sip || 0), cls = classOf(item);
+                tot.inv += r.inv; tot.cur += r.cur; tot.sip += sip;
+                classVal[cls] += r.cur; classSip[cls] += sip;
+                const grp = isMarketAsset(item.type) ? mk : pe;
+                grp.inv += r.inv; grp.cur += r.cur; grp.sip += sip;
+
+                const market = isMarketAsset(item.type);
+                const memberBadge = `<span class="px-2 py-0.5 text-xs font-semibold rounded-full ${item.member === 'Self' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${item.member}</span>`;
+                const clsMeta = CLASSES.find(c => c.k === cls);
+                const clsBadge = `<span class="inline-block whitespace-nowrap px-2 py-0.5 text-xs font-semibold rounded-md text-white" style="background:${clsMeta.c}">${cls}</span>`;
+                const retCell = `<td class="p-3.5 text-right font-mono font-medium ${r.ret >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${fmt(r.ret)} (${r.retPct.toFixed(1)}%)</td>`;
+                const actions = `<td class="p-3.5 text-center"><div class="flex items-center justify-center space-x-1.5">
+                    <button onclick="editAsset('${item.id}')" title="Edit Asset" class="text-slate-400 hover:text-indigo-600 transition p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button onclick="deleteAsset('${item.id}')" title="Delete Asset" class="text-slate-400 hover:text-rose-600 transition p-1"><i class="fa-solid fa-trash-can"></i></button></div></td>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                if (market) {
+                    mkCount++;
+                    tr.innerHTML = `
+                        <td class="p-3.5 font-medium text-slate-800">${item.name}</td>
+                        <td class="p-3.5">${memberBadge}</td>
+                        <td class="p-3.5">${clsBadge}</td>
+                        <td class="p-3.5 text-right font-mono text-slate-600">${Number(r.units).toLocaleString()}</td>
+                        <td class="p-3.5 text-right font-mono text-slate-600">₹${Number(r.ep).toFixed(2)}</td>
+                        <td class="p-3.5 text-right font-mono text-slate-600">₹${Number(item.currentNav || r.ep).toFixed(2)}</td>
+                        <td class="p-3.5 text-right font-mono font-semibold text-slate-800">${fmt(r.cur)}</td>
+                        ${retCell}
+                        <td class="p-3.5 text-center font-mono text-indigo-600">₹${sip.toLocaleString()}</td>
+                        ${actions}`;
+                    marketTbody.appendChild(tr);
+                } else {
+                    peCount++;
+                    tr.innerHTML = `
+                        <td class="p-3.5 font-medium text-slate-800">${item.name}</td>
+                        <td class="p-3.5">${memberBadge}</td>
+                        <td class="p-3.5">${clsBadge}</td>
+                        <td class="p-3.5 text-right font-mono text-slate-600">${fmt(r.inv)}</td>
+                        <td class="p-3.5 text-right font-mono font-semibold text-slate-800">${fmt(r.cur)}</td>
+                        ${retCell}
+                        <td class="p-3.5 text-center font-mono text-emerald-600">₹${sip.toLocaleString()}</td>
+                        ${actions}`;
+                    personalTbody.appendChild(tr);
+                }
+            });
+
+            if (mkCount === 0) marketTbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-slate-400">No mutual funds or stocks added for this view.</td></tr>`;
+            if (peCount === 0) personalTbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">No personal assets or government schemes added for this view.</td></tr>`;
+
+            const gain = tot.cur - tot.inv;
+            const gainCls = gain >= 0 ? 'text-emerald-600' : 'text-rose-600';
+            const re = classVal['Real Estate'];
+            const investable = tot.cur - re;
+
+            document.getElementById('hero-networth').innerText = fmt(tot.cur);
+            document.getElementById('hero-sub').innerText = tot.cur > 0 ? `That is about ${fmtC(tot.cur)}. Of this, ${fmtC(investable)} is investable (everything except property).` : 'Add your holdings to see your net worth.';
+            tiles('hero-tiles', [
+                ['Money you put in', fmtC(tot.inv), '', 'Total invested'],
+                ['Growth so far', `${gain >= 0 ? '+' : ''}${fmtC(gain)}`, gainCls, `${pctOf(gain, tot.inv).toFixed(1)}% on invested`],
+                ['Added every month', fmt(tot.sip), 'text-indigo-600', 'SIPs and contributions'],
+                ['Investable wealth', fmtC(investable), '', 'Net worth minus property']
+            ], 'indigo');
+            tiles('market-tiles', [
+                ['Market value', fmt(mk.cur)], ['Invested capital', fmt(mk.inv)],
+                ['Unrealized gains', `${fmt(mk.cur - mk.inv)} (${pctOf(mk.cur - mk.inv, mk.inv).toFixed(1)}%)`, mk.cur >= mk.inv ? 'text-emerald-700' : 'text-rose-600'],
+                ['Monthly SIP', fmt(mk.sip)]
+            ], 'indigo');
+            tiles('personal-tiles', [
+                ['Total valuation', fmt(pe.cur)], ['Invested capital', fmt(pe.inv)],
+                ['Appreciation / gain', `${fmt(pe.cur - pe.inv)} (${pctOf(pe.cur - pe.inv, pe.inv).toFixed(1)}%)`, pe.cur >= pe.inv ? 'text-emerald-700' : 'text-rose-600'],
+                ['Monthly contribution', fmt(pe.sip)]
+            ], 'emerald');
+
+            renderAllocation(classVal, classSip, tot);
+            renderInsights(filtered, classVal, classSip, tot, selfNet, spouseNet);
+            updateCharts(classVal, selfNet, spouseNet);
+        }
+
+        function renderAllocation(classVal, classSip, tot) {
+            const rows = CLASSES.filter(c => classVal[c.k] > 0 || classSip[c.k] > 0);
+            document.getElementById('alloc-stack').innerHTML = rows.map(c =>
+                `<div title="${c.k} ${pctOf(classVal[c.k], tot.cur).toFixed(1)}%" style="width:${pctOf(classVal[c.k], tot.cur)}%;background:${c.c}"></div>`).join('');
+            document.getElementById('alloc-body').innerHTML = rows.length ? rows.map(c => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5"><div class="font-medium text-slate-800"><span class="inline-block w-2.5 h-2.5 rounded-full mr-2" style="background:${c.c}"></span>${c.k}</div><div class="text-[11px] text-slate-400 ml-4">${c.d}</div></td>
+                    <td class="p-2.5 text-right font-mono text-slate-700">${fmt(classVal[c.k])}</td>
+                    <td class="p-2.5 text-right font-mono font-semibold text-indigo-700">${pctOf(classVal[c.k], tot.cur).toFixed(1)}%</td>
+                    <td class="p-2.5 text-right font-mono text-slate-600">${tot.sip > 0 ? pctOf(classSip[c.k], tot.sip).toFixed(0) + '%' : '–'}</td>
+                </tr>`).join('') : `<tr><td colspan="4" class="text-center py-4 text-slate-400">No holdings in this view.</td></tr>`;
+        }
+
+        function renderInsights(filtered, classVal, classSip, tot, selfNet, spouseNet) {
+            const el = document.getElementById('insights');
+            if (tot.cur <= 0) { el.innerHTML = '<p class="text-sm text-slate-400">Add holdings to see checks.</p>'; return; }
+            const ins = [];
+            const re = classVal['Real Estate'], investable = tot.cur - re;
+
+            const rePct = pctOf(re, tot.cur);
+            if (rePct >= 40) ins.push(['warn', `Property is ${rePct.toFixed(0)}% of your net worth`, `Land and flats can't be sold in small pieces and pay no monthly income, so your usable wealth is ${fmtC(investable)}, not ${fmtC(tot.cur)}. The share falls over time only if new savings go to other classes.`]);
+            else if (re > 0) ins.push(['ok', `Property is ${rePct.toFixed(0)}% of net worth`, 'No single illiquid asset dominates your wealth.']);
+
+            if (investable > 0) {
+                const growth = classVal['Equity'] + classVal['Multi-asset'] + classVal['NPS'];
+                const gp = pctOf(growth, investable);
+                ins.push(['info', `${gp.toFixed(0)}% of investable wealth is in growth assets`, `Equity, multi-asset funds and NPS together. The rest (${(100 - gp).toFixed(0)}%) is steady or safe. A common starting rule of thumb is 100 minus your age in growth assets; your timeline and how you handle market falls matter more than any rule.`]);
+            }
+
+            const cash = classVal['Cash'];
+            if (monthlyExpense > 0) {
+                const months = cash / monthlyExpense;
+                const shortBy = Math.max(0, monthlyExpense * 6 - cash);
+                if (months < 3) ins.push(['warn', `Emergency fund covers ${months.toFixed(1)} months`, `Investor education material commonly suggests keeping 3 to 6 months of expenses in easily accessible money (some suggest more). Reaching 6 months would need about ${fmtC(shortBy)} more in cash or liquid savings.`]);
+                else if (months < 6) ins.push(['info', `Emergency fund covers ${months.toFixed(1)} months`, `Inside the commonly cited 3 to 6 month range. Reaching 6 months would need about ${fmtC(shortBy)} more. A steadier income usually needs less buffer; a variable income or dependents may need more.`]);
+                else ins.push(['ok', `Emergency fund covers ${months.toFixed(1)} months`, 'At or above the commonly cited 6 months of expenses.']);
+            } else {
+                ins.push([cash > 0 ? 'info' : 'warn', cash > 0 ? `Emergency fund: ${fmtC(cash)}` : 'No cash or emergency fund recorded', 'Enter your monthly household expenses above to see how many months this would last. Investor education material commonly suggests 3 to 6 months.']);
+            }
+
+            if (investable > 0) {
+                const top = filtered.filter(i => !classOf(i).includes('Real Estate')).map(i => ({ n: i.name, v: calc(i).cur })).sort((a, b) => b.v - a.v)[0];
+                if (top && pctOf(top.v, investable) >= 30) ins.push(['warn', `One holding is ${pctOf(top.v, investable).toFixed(0)}% of investable wealth`, `${top.n}. Large single positions raise risk if that one asset struggles. Check whether this is intentional.`]);
+            }
+
+            if (classVal['Gold'] === 0 && investable > 0) ins.push(['info', 'No gold exposure', 'Some investors keep a small slice (often 5 to 10%) as a hedge against market falls. It is optional and depends on your view.']);
+
+            if (currentMemberFilter === 'combined' && selfNet + spouseNet > 0) {
+                const lo = Math.min(selfNet, spouseNet), p = pctOf(lo, selfNet + spouseNet);
+                if (p < 15) ins.push(['info', `One name holds ${(100 - p).toFixed(0)}% of family wealth`, 'Worth checking whether this matches your goals for tax planning and financial security of both partners.']);
+            }
+
+            if (tot.sip > 0) {
+                const parts = CLASSES.filter(c => classSip[c.k] > 0).sort((a, b) => classSip[b.k] - classSip[a.k]).map(c => `${pctOf(classSip[c.k], tot.sip).toFixed(0)}% ${c.k}`);
+                ins.push(['info', `Your ${fmt(tot.sip)} a month goes to: ${parts.join(', ')}`, 'This is how your allocation will shift over time. Compare it with the table above and decide if the direction is what you want.']);
+            }
+
+            const style = { warn: ['border-amber-400 bg-amber-50', 'fa-triangle-exclamation text-amber-500'], ok: ['border-emerald-400 bg-emerald-50', 'fa-circle-check text-emerald-500'], info: ['border-indigo-300 bg-indigo-50/50', 'fa-circle-info text-indigo-500'] };
+            el.innerHTML = ins.map(([lvl, title, text]) => {
+                const [srcName, srcUrl] = srcFor(title);
+                return `
+                <div class="border-l-4 ${style[lvl][0]} rounded-lg p-3.5">
+                    <p class="text-sm font-semibold text-slate-800"><i class="fa-solid ${style[lvl][1]} mr-1.5"></i>${title}</p>
+                    <p class="text-xs text-slate-600 mt-1">${text}</p>
+                    <a href="${srcUrl}" target="_blank" rel="noopener" class="inline-block text-[11px] text-indigo-600 hover:underline mt-1.5"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>${srcName}</a>
+                </div>`;
+            }).join('');
+        }
+
+        function updateCharts(classVal, self, spouse) {
+            const rows = CLASSES.filter(c => classVal[c.k] > 0);
+            const ctx1 = document.getElementById('allocationChart').getContext('2d');
+            if (allocationChartInstance) allocationChartInstance.destroy();
+            allocationChartInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: { labels: rows.map(c => c.k), datasets: [{ data: rows.map(c => classVal[c.k]), backgroundColor: rows.map(c => c.c), borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+            });
+            const ctx2 = document.getElementById('memberChart').getContext('2d');
+            if (memberChartInstance) memberChartInstance.destroy();
+            memberChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: { labels: ['Self', 'Spouse'], datasets: [{ label: 'Net Worth (₹)', data: [self, spouse], backgroundColor: ['#3b82f6', '#8b5cf6'], borderRadius: 6 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // ---------- Modal ----------
+        function toggleCategoryFields(category) {
+            const search = document.getElementById('mf-search-group'), units = document.getElementById('units-container');
+            const lblPrice = document.getElementById('lbl-purchase-price'), lblNav = document.getElementById('lbl-current-nav');
+            if (category === 'Mutual Fund') {
+                search.classList.remove('hidden'); units.classList.remove('hidden');
+                lblPrice.innerText = 'Purchase NAV (₹)'; lblNav.innerText = 'Current NAV (₹)';
+            } else if (category === 'Stock') {
+                search.classList.add('hidden'); units.classList.remove('hidden');
+                lblPrice.innerText = 'Buy Price per Share (₹)'; lblNav.innerText = 'Current Share Price (₹)';
+            } else {
+                search.classList.add('hidden'); units.classList.add('hidden');
+                document.getElementById('asset-units').value = 1;
+                lblPrice.innerText = 'Invested Amount / Buy Price (₹) [Optional]'; lblNav.innerText = 'Current Valuation / Balance (₹)';
+            }
+        }
+
+        function openAddModal(defaultType) {
+            document.getElementById('add-modal').classList.remove('hidden');
+            document.getElementById('add-modal').classList.add('flex');
+            document.getElementById('add-form').reset();
+            document.getElementById('edit-asset-id').value = "";
+            document.getElementById('modal-title').innerText = "Add Asset";
+            document.getElementById('btn-submit-form').innerText = "Save Asset";
+            const sel = document.getElementById('asset-category');
+            sel.value = defaultType === 'Mutual Fund' ? 'Mutual Fund' : 'NPS';
+            toggleCategoryFields(sel.value);
+        }
+
+        function editAsset(id) {
+            const item = portfolio.find(a => a.id === id);
+            if (!item) return;
+            document.getElementById('add-modal').classList.remove('hidden');
+            document.getElementById('add-modal').classList.add('flex');
+            document.getElementById('edit-asset-id').value = item.id;
+            document.getElementById('modal-title').innerText = `Edit ${item.name}`;
+            document.getElementById('btn-submit-form').innerText = "Update Record";
+            document.getElementById('asset-member').value = item.member;
+            document.getElementById('asset-category').value = item.type;
+            toggleCategoryFields(item.type);
+            document.getElementById('asset-name').value = item.name;
+            document.getElementById('asset-units').value = item.units || 1;
+            document.getElementById('asset-purchase-price').value = item.price || '';
+            document.getElementById('asset-current-nav').value = item.currentNav || item.price || 0;
+            document.getElementById('asset-sip').value = item.sip || 0;
+            document.getElementById('asset-class').value = item.assetClass || '';
+            document.getElementById('asset-category-raw').value = item.category || '';
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.remove('flex');
+            document.getElementById('add-modal').classList.add('hidden');
+            document.getElementById('mf-results').classList.add('hidden');
+        }
+
+        async function searchMutualFunds(query) {
+            const box = document.getElementById('mf-results');
+            if (!query || query.trim().length < 2) { box.innerHTML = ''; box.classList.add('hidden'); return; }
+            try {
+                const res = await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(query.trim())}`);
+                if (!res.ok) throw new Error('Search failed');
+                const data = await res.json();
+                box.innerHTML = '';
+                if (Array.isArray(data) && data.length > 0) {
+                    box.classList.remove('hidden');
+                    data.slice(0, 10).forEach(fund => {
+                        const div = document.createElement('div');
+                        div.className = "p-2.5 hover:bg-indigo-50 cursor-pointer text-xs border-b border-slate-100 last:border-none transition text-slate-700 font-medium flex justify-between items-center";
+                        div.innerHTML = `<span class="truncate pr-2">${fund.schemeName}</span><span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 flex-shrink-0">NAV</span>`;
+                        div.onclick = () => selectMutualFund(fund.schemeCode, fund.schemeName);
+                        box.appendChild(div);
+                    });
+                } else {
+                    box.innerHTML = `<div class="p-3 text-xs text-slate-400 text-center">No matching funds found</div>`;
+                    box.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error('MF Search Error:', err);
+                box.innerHTML = `<div class="p-3 text-xs text-rose-500 text-center">Error searching funds.</div>`;
+                box.classList.remove('hidden');
+            }
+        }
+
+        async function selectMutualFund(code, name) {
+            document.getElementById('asset-name').value = name;
+            document.getElementById('mf-results').classList.add('hidden');
+            document.getElementById('mf-search-input').value = '';
+            try {
+                const res = await fetch(`https://api.mfapi.in/mf/${code}`);
+                const data = await res.json();
+                if (data && data.data && data.data.length > 0) document.getElementById('asset-current-nav').value = parseFloat(data.data[0].nav);
+                if (data && data.meta && data.meta.scheme_category) document.getElementById('asset-category-raw').value = data.meta.scheme_category;
+            } catch (err) { console.error('Error fetching scheme NAV:', err); }
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-asset-id').value;
+            const category = document.getElementById('asset-category').value;
+            const nav = parseFloat(document.getElementById('asset-current-nav').value) || 0;
+            const pp = parseFloat(document.getElementById('asset-purchase-price').value);
+            const priceVal = (!isNaN(pp) && pp > 0) ? pp : nav;
+            const fields = {
+                member: document.getElementById('asset-member').value,
+                type: category,
+                name: document.getElementById('asset-name').value,
+                units: parseFloat(document.getElementById('asset-units').value) || 1,
+                price: priceVal,
+                currentNav: nav,
+                sip: parseFloat(document.getElementById('asset-sip').value) || 0,
+                assetClass: document.getElementById('asset-class').value
+            };
+            const rawCat = document.getElementById('asset-category-raw').value;
+            if (rawCat) fields.category = rawCat;
+            if (editId) {
+                const idx = portfolio.findIndex(a => a.id === editId);
+                if (idx !== -1) Object.assign(portfolio[idx], fields);
+            } else {
+                portfolio.push({ id: Date.now().toString(), ...fields });
+            }
+            saveAndRefresh();
+            closeAddModal();
+        }
+
+        function deleteAsset(id) {
+            if (confirm('Are you sure you want to remove this asset?')) {
+                portfolio = portfolio.filter(item => item.id !== id);
+                saveAndRefresh();
+            }
+        }
+
+        // ---------- Excel import ----------
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const selectedMember = document.getElementById('upload-member').value;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+                    if (!rawRows || rawRows.length === 0) { alert('Excel file is empty.'); return; }
+
+                    let headerIdx = -1;
+                    for (let i = 0; i < rawRows.length; i++) {
+                        const s = rawRows[i].join(' ').toLowerCase();
+                        if (s.includes('scheme name') || s.includes('asset name') || s.includes('fund name')) { headerIdx = i; break; }
+                    }
+                    const newAssets = [];
+                    if (headerIdx !== -1) {
+                        const headers = rawRows[headerIdx].map(h => String(h || '').trim().toLowerCase());
+                        const colScheme = headers.findIndex(h => h.includes('scheme') || h.includes('asset') || h.includes('name'));
+                        const colUnits = headers.findIndex(h => h.includes('unit') || h.includes('qty'));
+                        const colInvested = headers.findIndex(h => h.includes('invested'));
+                        const colCurrent = headers.findIndex(h => h.includes('current value') || h.includes('current nav'));
+                        for (let i = headerIdx + 1; i < rawRows.length; i++) {
+                            const row = rawRows[i];
+                            if (!row || row.length === 0) continue;
+                            const name = row[colScheme] ? String(row[colScheme]).trim() : '';
+                            if (!name || name.toLowerCase().includes('total') || name.toLowerCase().includes('holding')) continue;
+                            const units = parseFloat(row[colUnits]) || 1;
+                            let purchasePrice = 0, currentNav = 0;
+                            if (colInvested !== -1 && row[colInvested]) { const v = parseFloat(row[colInvested]) || 0; purchasePrice = units > 0 ? v / units : v; }
+                            if (colCurrent !== -1 && row[colCurrent]) { const v = parseFloat(row[colCurrent]) || 0; currentNav = units > 0 ? v / units : v; }
+                            newAssets.push({
+                                id: Date.now().toString() + i, name, member: selectedMember, type: 'Mutual Fund', units,
+                                price: parseFloat(purchasePrice.toFixed(4)), currentNav: parseFloat((currentNav || purchasePrice).toFixed(4)), sip: 0
+                            });
+                        }
+                    }
+                    if (newAssets.length > 0) {
+                        if (confirm(`Parsed ${newAssets.length} mutual funds for member [${selectedMember}].\n\nClick OK to REPLACE ONLY ${selectedMember.toUpperCase()}'s Mutual Funds.\nClick CANCEL to APPEND them without removing existing entries.`)) {
+                            portfolio = portfolio.filter(item => !(isMarketAsset(item.type) && item.member.toLowerCase() === selectedMember.toLowerCase())).concat(newAssets);
+                        } else {
+                            portfolio = portfolio.concat(newAssets);
+                        }
+                        saveAndRefresh();
+                        alert(`Mutual funds updated successfully for ${selectedMember}!`);
+                    } else { alert('Could not find any valid fund rows in the file.'); }
+                } catch (err) {
+                    console.error('Excel Import Error:', err);
+                    alert('Error parsing Excel file.');
+                }
+                event.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+    <script src="https://accounts.google.com/gsi/client" onload="gisLoaded()" async defer></script>
+    <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()" async defer></script>
+</body>
+</html>
