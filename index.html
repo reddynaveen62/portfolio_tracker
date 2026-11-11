@@ -407,47 +407,6 @@
             <p class="mt-2 text-[11px] text-slate-500">Investment gains shown here are simple valuation changes, not annualized or cash-flow-adjusted returns.</p>
         </section>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-800">Liabilities</h2>
-                    <p class="mt-1 text-xs text-slate-500">Outstanding balances are subtracted from net worth. Update them using the balance as of the date shown.</p>
-                </div>
-            </div>
-            <form id="liability-form" onsubmit="handleLiabilitySubmit(event)" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <input id="liability-edit-id" type="hidden" value="">
-                <label class="text-xs font-semibold text-slate-700">Liability name
-                    <input id="liability-name" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Home loan">
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Type
-                    <select id="liability-type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></select>
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Member
-                    <select id="liability-member" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option>Self</option><option>Spouse</option></select>
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Outstanding balance (₹)
-                    <input id="liability-balance" type="number" min="0" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0.00">
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Balance as of
-                    <input id="liability-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                </label>
-                <div class="flex items-end justify-end gap-2">
-                    <button id="liability-cancel-edit" type="button" onclick="resetLiabilityForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel edit</button>
-                    <button id="liability-submit" type="submit" class="min-h-[44px] rounded-lg bg-rose-700 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-rose-800">Add liability</button>
-                </div>
-            </form>
-            <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm">
-                <span class="font-semibold text-rose-900">Total liabilities for this view</span>
-                <span id="liability-total" class="font-bold text-rose-800">₹0</span>
-            </div>
-            <div id="liability-table-scroll" class="mt-3 overflow-x-auto">
-                <table class="w-full min-w-[640px] text-left text-sm">
-                    <thead><tr class="bg-slate-100 text-xs uppercase text-slate-600"><th class="p-3">Liability</th><th class="p-3">Member</th><th class="p-3 text-right">Balance</th><th class="p-3">As of</th><th class="p-3 text-center">Actions</th></tr></thead>
-                    <tbody id="liability-table-body" class="divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
-        </section>
-
         <!-- 2. WHERE YOUR MONEY SITS -->
         <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 space-y-4">
             <div>
@@ -606,6 +565,47 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Liabilities</h2>
+                    <p class="mt-1 text-xs text-slate-500">Outstanding balances are subtracted from net worth. Update them using the balance as of the date shown.</p>
+                </div>
+            </div>
+            <form id="liability-form" onsubmit="handleLiabilitySubmit(event)" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <input id="liability-edit-id" type="hidden" value="">
+                <label class="text-xs font-semibold text-slate-700">Liability name
+                    <input id="liability-name" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Home loan">
+                </label>
+                <label class="text-xs font-semibold text-slate-700">Type
+                    <select id="liability-type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></select>
+                </label>
+                <label class="text-xs font-semibold text-slate-700">Member
+                    <select id="liability-member" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option>Self</option><option>Spouse</option></select>
+                </label>
+                <label class="text-xs font-semibold text-slate-700">Outstanding balance (₹)
+                    <input id="liability-balance" type="number" min="0" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0.00">
+                </label>
+                <label class="text-xs font-semibold text-slate-700">Balance as of
+                    <input id="liability-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                </label>
+                <div class="flex items-end justify-end gap-2">
+                    <button id="liability-cancel-edit" type="button" onclick="resetLiabilityForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel edit</button>
+                    <button id="liability-submit" type="submit" class="min-h-[44px] rounded-lg bg-rose-700 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-rose-800">Add liability</button>
+                </div>
+            </form>
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm">
+                <span class="font-semibold text-rose-900">Total liabilities for this view</span>
+                <span id="liability-total" class="font-bold text-rose-800">₹0</span>
+            </div>
+            <div id="liability-table-scroll" class="mt-3 overflow-x-auto">
+                <table class="w-full min-w-[640px] text-left text-sm">
+                    <thead><tr class="bg-slate-100 text-xs uppercase text-slate-600"><th class="p-3">Liability</th><th class="p-3">Member</th><th class="p-3 text-right">Balance</th><th class="p-3">As of</th><th class="p-3 text-center">Actions</th></tr></thead>
+                    <tbody id="liability-table-body" class="divide-y divide-slate-100"></tbody>
+                </table>
             </div>
         </section>
         </div>
