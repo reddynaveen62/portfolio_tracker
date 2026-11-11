@@ -471,7 +471,7 @@
             <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-indigo-600">
                 <div class="flex flex-1 flex-wrap items-center gap-2">
                     <h3 class="w-full sm:w-auto">
-                        <button type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="true" aria-controls="market-content" onclick="toggleSection(this)">
+                        <button type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="false" aria-controls="market-content" onclick="toggleSection(this)">
                             <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
                             <span><i class="fa-solid fa-chart-line text-indigo-600 mr-2" aria-hidden="true"></i>Mutual Funds & Market Holdings</span>
                         </button>
@@ -479,6 +479,8 @@
                     <span id="market-view-badge" class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Viewing: Combined</span>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
+                    <span id="mutual-fund-nav-status" class="text-xs text-slate-500" role="status"></span>
+                    <button type="button" id="refresh-mutual-fund-navs" onclick="refreshMutualFundNavs()" class="min-h-[44px] rounded-lg border border-indigo-200 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50">Refresh NAVs</button>
                     <select id="upload-member" class="bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg px-2.5 py-2 outline-none">
                         <option value="Self">For: Self</option>
                         <option value="Spouse">For: Spouse</option>
@@ -488,11 +490,12 @@
                     <button type="button" onclick="openAddModal('Mutual Fund')" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
                 </div>
             </div>
-            <div id="market-content">
+            <div id="market-content" class="hidden">
                 <div id="market-tiles" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div id="market-table-scroll" class="overflow-x-auto">
                         <p class="text-[11px] text-slate-400 px-3 pt-2 sm:hidden">Swipe to see all columns</p>
+                        <p class="px-3 pb-2 text-[11px] text-slate-500">Returns include realized gains/losses from linked sales and gains/losses on units still held. Opening units are the starting balance; only link trades not already included in that balance.</p>
                         <table class="w-full min-w-[900px] text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
@@ -520,7 +523,7 @@
             <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-violet-600">
                 <div class="flex flex-1 flex-wrap items-center gap-2">
                     <h3 class="w-full sm:w-auto">
-                        <button type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="true" aria-controls="schemes-content" onclick="toggleSection(this)">
+                        <button type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="false" aria-controls="schemes-content" onclick="toggleSection(this)">
                             <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
                             <span><i class="fa-solid fa-piggy-bank text-violet-600 mr-2" aria-hidden="true"></i>Government Schemes & NPS</span>
                         </button>
@@ -529,7 +532,7 @@
                 </div>
                 <button type="button" onclick="openAddModal('NPS')" class="record-add-button record-add-violet"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
             </div>
-            <div id="schemes-content">
+            <div id="schemes-content" class="hidden">
                 <div id="schemes-tiles" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div id="schemes-table-scroll" class="overflow-x-auto">
@@ -559,7 +562,7 @@
             <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-600">
                 <div class="flex flex-1 flex-wrap items-center gap-2">
                     <h3 class="w-full sm:w-auto">
-                        <button type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="true" aria-controls="personal-content" onclick="toggleSection(this)">
+                        <button type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="false" aria-controls="personal-content" onclick="toggleSection(this)">
                             <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
                             <span><i class="fa-solid fa-building-columns text-emerald-600 mr-2" aria-hidden="true"></i>Personal Assets & Liquid Cash</span>
                         </button>
@@ -568,7 +571,7 @@
                 </div>
                 <button type="button" onclick="openAddModal('Personal')" class="record-add-button record-add-emerald"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
             </div>
-            <div id="personal-content">
+            <div id="personal-content" class="hidden">
                 <div id="personal-tiles" class="grid grid-cols-2 gap-3"></div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div id="personal-table-scroll" class="overflow-x-auto">
@@ -594,7 +597,7 @@
         <section class="space-y-4">
             <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-rose-600">
                 <h3>
-                    <button id="liability-section-toggle" type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="true" aria-controls="liability-content" onclick="toggleSection(this)">
+                    <button id="liability-section-toggle" type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="false" aria-controls="liability-content" onclick="toggleSection(this)">
                         <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
                         <span><i class="fa-solid fa-scale-balanced text-rose-600 mr-2" aria-hidden="true"></i>Liabilities</span>
                     </button>
@@ -603,7 +606,7 @@
                     <i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span>
                 </button>
             </div>
-            <div id="liability-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div id="liability-content" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                 <p class="text-xs text-slate-500">Outstanding balances are subtracted from net worth. For loans, enter the bank’s annual rate, remaining term, and regular EMI. Interest is estimated by monthly compounding; check statements because banks may use daily accrual or variable rates.</p>
                 <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm">
                     <span class="font-semibold text-rose-900">Total liabilities for this view</span>
@@ -665,13 +668,13 @@
             <section class="space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
                     <h3>
-                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="cash-settings-content" onclick="toggleSection(this)">
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="false" aria-controls="cash-settings-content" onclick="toggleSection(this)">
                             <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
                             <span><i class="fa-solid fa-wallet mr-2 text-indigo-600" aria-hidden="true"></i>Cash balance settings</span>
                         </button>
                     </h3>
                 </div>
-                <div id="cash-settings-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                <div id="cash-settings-content" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Income & Expenses</h2>
@@ -750,14 +753,14 @@
             <section class="space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
                     <h3>
-                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="recurring-transactions-content" onclick="toggleSection(this)">
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="false" aria-controls="recurring-transactions-content" onclick="toggleSection(this)">
                             <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
                             <span><i class="fa-solid fa-repeat mr-2 text-indigo-600" aria-hidden="true"></i>Recurring transactions</span>
                         </button>
                     </h3>
                     <button type="button" onclick="openCashflowModal(true)" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
                 </div>
-                <div id="recurring-transactions-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                <div id="recurring-transactions-content" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                     <p class="text-xs text-slate-500">Record an occurrence to add it to your transactions. Each occurrence records today’s date and moves the next due date forward by one month.</p>
                     <div id="recurring-transactions-list" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
                 </div>
@@ -766,14 +769,14 @@
             <section class="space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
                     <h3>
-                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="cashflow-transactions-content" onclick="toggleSection(this)">
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="false" aria-controls="cashflow-transactions-content" onclick="toggleSection(this)">
                             <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
                             <span><i class="fa-solid fa-list mr-2 text-indigo-600" aria-hidden="true"></i>Transactions</span>
                         </button>
                     </h3>
                     <button type="button" onclick="openCashflowModal(false)" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
                 </div>
-                <div id="cashflow-transactions-content" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div id="cashflow-transactions-content" class="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                     <div class="border-b border-slate-200 px-4 py-3 sm:px-5">
                         <div class="flex flex-wrap items-end justify-between gap-3">
                             <div>
@@ -812,14 +815,14 @@
             <section class="space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
                     <h3>
-                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="goals-content" onclick="toggleSection(this)">
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="false" aria-controls="goals-content" onclick="toggleSection(this)">
                             <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
                             <span><i class="fa-solid fa-bullseye mr-2 text-indigo-600" aria-hidden="true"></i>Financial goals</span>
                         </button>
                     </h3>
                     <button type="button" onclick="openGoalModal()" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
                 </div>
-                <div id="goals-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                <div id="goals-content" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                     <p class="text-xs text-slate-500">Monthly amounts are simple targets based on time remaining and do not assume investment returns.</p>
                     <div id="goals-list" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
                 </div>
@@ -827,13 +830,13 @@
             <section class="space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 border-l-4 border-l-amber-500 bg-amber-50 p-4">
                     <h3>
-                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left font-bold text-amber-900" aria-expanded="true" aria-controls="planning-notes-content" onclick="toggleSection(this)">
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left font-bold text-amber-900" aria-expanded="false" aria-controls="planning-notes-content" onclick="toggleSection(this)">
                             <i class="section-chevron fa-solid fa-chevron-up text-xs text-amber-700" aria-hidden="true"></i>
                             <span>Planning notes</span>
                         </button>
                     </h3>
                 </div>
-                <div id="planning-notes-content" class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div id="planning-notes-content" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4">
                     <p class="text-sm text-amber-900">Concentration and valuation-age indicators are prompts to review your data, not investment recommendations. Check current market values and loan balances against statements before relying on your net-worth estimate.</p>
                 </div>
             </section>
@@ -864,7 +867,7 @@
                         <select id="cashflow-category" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></select>
                     </label>
                     <label class="text-xs font-semibold text-slate-700">Amount (₹)
-                        <input id="cashflow-amount" type="number" min="0.01" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0.00" oninput="updateEmiPreview()">
+                        <input id="cashflow-amount" type="number" min="0.01" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0.00" oninput="updateEmiPreview(); updateInvestmentPreview()">
                     </label>
                     <div id="cashflow-emi-details" class="hidden grid-cols-1 gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 sm:col-span-2 sm:grid-cols-2 lg:col-span-3">
                         <label class="text-xs font-semibold text-slate-700">Loan
@@ -885,6 +888,15 @@
                     <label class="text-xs font-semibold text-slate-700">Description (optional)
                         <input id="cashflow-description" type="text" maxlength="120" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Monthly salary">
                     </label>
+                    <div id="cashflow-investment-details" class="hidden grid-cols-1 gap-3 rounded-lg border border-violet-200 bg-violet-50 p-3 sm:col-span-2 sm:grid-cols-2 lg:col-span-3">
+                        <label class="text-xs font-semibold text-slate-700">Link mutual fund (optional)
+                            <select id="cashflow-investment-asset" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="updateInvestmentPreview()"></select>
+                        </label>
+                        <label class="text-xs font-semibold text-slate-700">Units bought / sold
+                            <input id="cashflow-investment-units" type="number" min="0.000001" step="any" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" oninput="updateInvestmentPreview()">
+                        </label>
+                        <p id="cashflow-investment-preview" class="text-xs text-slate-600 sm:col-span-2">Link this transfer to a mutual fund to track units and returns. Generic transfers remain unchanged.</p>
+                    </div>
                     <label id="cashflow-recurring-option" class="hidden min-h-[44px] items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-900">
                         <input id="cashflow-recurring" type="checkbox" class="h-5 w-5 accent-indigo-600" onchange="updateCashflowCategories(document.getElementById('cashflow-category').value, document.getElementById('cashflow-liability').value)">
                         Make this a monthly recurring transaction
@@ -940,6 +952,7 @@
             </div>
             <form id="add-form" onsubmit="handleFormSubmit(event)" class="space-y-3">
                 <input type="hidden" id="edit-asset-id" value="">
+                <input type="hidden" id="asset-scheme-code" value="">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Portfolio Member</label>
                     <select id="asset-member" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none"><option value="Self">Self</option><option value="Spouse">Spouse</option></select>
@@ -976,7 +989,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Asset Description / Name</label>
-                    <input type="text" id="asset-name" required placeholder="e.g. PPF Account, HDFC Bank Emergency Fund..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
+                    <input type="text" id="asset-name" required placeholder="e.g. PPF Account, HDFC Bank Emergency Fund..." oninput="document.getElementById('asset-scheme-code').value=''" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div id="units-container">
@@ -1117,13 +1130,57 @@
         function isMarketAsset(type) { return type === 'Mutual Fund' || type === 'Stock'; }
         function isGovtOrNpsAsset(type) { return ['NPS', 'EPF', 'PPF', 'SSY'].includes(type); }
 
+        function mutualFundPosition(item, asOfDate = todayLocalISO(), transactionList = cashflowTransactions, excludingTransactionId = '') {
+            let units = Number(item.units ?? 1);
+            let costBasis = units * Number(item.price || item.currentNav || 0);
+            let totalInvested = costBasis;
+            let saleProceeds = 0;
+            if (!Number.isFinite(units) || units < 0 || !Number.isFinite(costBasis) || costBasis < 0) {
+                return { valid: false, units, costBasis, totalInvested, saleProceeds };
+            }
+            const transactions = transactionList
+                .filter(transaction =>
+                    transaction.assetId === item.id &&
+                    transaction.id !== excludingTransactionId &&
+                    transaction.date <= asOfDate
+                )
+                .slice()
+                .sort((a, b) => a.date.localeCompare(b.date));
+            for (const transaction of transactions) {
+                const quantity = Number(transaction.investmentUnits);
+                const amount = Number(transaction.amount);
+                if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(amount) || amount <= 0) {
+                    return { valid: false, units, costBasis, totalInvested, saleProceeds };
+                }
+                if (transaction.type === 'transfer-out') {
+                    units += quantity;
+                    costBasis += amount;
+                    totalInvested += amount;
+                } else if (transaction.type === 'transfer-in') {
+                    if (quantity > units) return { valid: false, units, costBasis, totalInvested, saleProceeds };
+                    const averageCost = units > 0 ? costBasis / units : 0;
+                    units = Math.max(0, units - quantity);
+                    costBasis = Math.max(0, costBasis - averageCost * quantity);
+                    saleProceeds += amount;
+                }
+            }
+            return { valid: true, units, costBasis, totalInvested, saleProceeds };
+        }
+
         function calc(item) {
-            const units = item.units || 1;
-            const ep = (item.price && item.price > 0) ? item.price : (item.currentNav || 0);
+            const fundPosition = item.type === 'Mutual Fund' ? mutualFundPosition(item) : null;
+            if (fundPosition && !fundPosition.valid) throw new Error(`Linked mutual-fund transactions exceed the units held for ${item.name}.`);
+            const units = fundPosition ? fundPosition.units : item.units || 1;
+            const ep = fundPosition && units > 0
+                ? fundPosition.costBasis / units
+                : (item.price && item.price > 0) ? item.price : (item.currentNav || 0);
             const mk = isMarketAsset(item.type);
-            const inv = mk ? units * ep : ep;
             const cur = mk ? units * (item.currentNav || ep) : (item.currentNav || ep);
-            return { units, ep, inv, cur, ret: cur - inv, retPct: pctOf(cur - inv, inv) };
+            const inv = mk
+                ? (fundPosition ? fundPosition.totalInvested : units * ep)
+                : ep;
+            const ret = cur + (fundPosition?.saleProceeds || 0) - inv;
+            return { units, ep, inv, cur, ret, retPct: pctOf(ret, inv) };
         }
 
         function tiles(id, list, color) {
@@ -1250,6 +1307,7 @@
             renderDashboard();
             renderCashflowDashboard();
             backfillCategories();
+            void refreshMutualFundNavs();
         }
 
         function lockDashboard() {
@@ -1399,6 +1457,15 @@
                     /^\d{4}-\d{2}-\d{2}$/.test(item.date) &&
                     (item.member === 'Self' || item.member === 'Spouse') &&
                     typeof item.description === 'string' &&
+                    ((item.assetId === undefined && item.investmentUnits === undefined) ||
+                        (typeof item.assetId === 'string' &&
+                            typeof item.investmentUnits === 'number' &&
+                            Number.isFinite(item.investmentUnits) && item.investmentUnits > 0 &&
+                            ['transfer-in', 'transfer-out'].includes(item.type) &&
+                            item.date <= todayLocalISO() &&
+                            fileData.portfolio.some(asset =>
+                                asset && asset.id === item.assetId &&
+                                asset.type === 'Mutual Fund' && asset.member === item.member))) &&
                     (item.type !== 'emi' ||
                         (typeof item.liabilityId === 'string' &&
                             item.category === 'Loan EMI' &&
@@ -1472,10 +1539,13 @@
                     driveLiabilities.every(liability => calculateLoanSchedule(
                         liability, todayLocalISO(), '', fileData.transactions
                     ).valid);
+                const validFundPositions = validTransactions && fileData.portfolio
+                    .filter(item => item && item.type === 'Mutual Fund')
+                    .every(item => mutualFundPosition(item, todayLocalISO(), fileData.transactions).valid);
                 if (!Number.isFinite(selfOpening) || !Number.isFinite(spouseOpening) || !validTransactions ||
-                    !validLiabilities || !validGoals || !validRecurringTransactions || !validRecurringEmiLinks || !validEmiLinks ||
+                    !validFundPositions || !validLiabilities || !validGoals || !validRecurringTransactions || !validRecurringEmiLinks || !validEmiLinks ||
                     (fileData.includeCashBalance !== undefined && typeof fileData.includeCashBalance !== 'boolean')) {
-                    throw new Error('portfolio.json contains invalid income, expense, EMI, liability, or opening balance data.');
+                    throw new Error('portfolio.json contains invalid cash-flow, linked mutual-fund, liability, or opening-balance data.');
                 }
                 portfolio = fileData.portfolio;
                 cashflowTransactions = fileData.transactions;
@@ -1781,12 +1851,33 @@
             renderCashflowDashboard();
         }
 
-        function updateCashflowCategories(selectedCategory = '', selectedLiabilityId = '') {
+        function updateCashflowCategories(selectedCategory = '', selectedLiabilityId = '', selectedAssetId = '') {
             const type = document.getElementById('cashflow-type').value;
             const select = document.getElementById('cashflow-category');
             const categories = CASHFLOW_CATEGORIES[type];
             select.innerHTML = categories.map(category => `<option value="${category}">${category}</option>`).join('');
             if (categories.includes(selectedCategory)) select.value = selectedCategory;
+
+            const investmentDetails = document.getElementById('cashflow-investment-details');
+            const showInvestmentDetails = type === 'transfer-in' || type === 'transfer-out';
+            investmentDetails.classList.toggle('hidden', !showInvestmentDetails);
+            investmentDetails.classList.toggle('grid', showInvestmentDetails);
+            const investmentAssetSelect = document.getElementById('cashflow-investment-asset');
+            const member = document.getElementById('cashflow-member').value;
+            investmentAssetSelect.replaceChildren(new Option('Do not link to a mutual fund', ''));
+            portfolio.filter(item => item.type === 'Mutual Fund' && item.member === member).forEach(item => {
+                investmentAssetSelect.add(new Option(item.name, item.id));
+            });
+            if (portfolio.some(item => item.id === selectedAssetId && item.type === 'Mutual Fund' && item.member === member)) {
+                investmentAssetSelect.value = selectedAssetId;
+            }
+            document.getElementById('cashflow-investment-units').required = Boolean(investmentAssetSelect.value);
+            document.getElementById('cashflow-investment-units').disabled = !investmentAssetSelect.value;
+            document.getElementById('cashflow-investment-preview').textContent =
+                investmentAssetSelect.value
+                    ? 'Linked transactions change fund units and are included in returns. Amount and units must match the transaction NAV.'
+                    : 'Link a transfer to a mutual fund to track units and returns. Generic transfers remain unchanged.';
+            updateInvestmentPreview();
 
             const emiDetails = document.getElementById('cashflow-emi-details');
             const isEmi = type === 'emi';
@@ -1805,7 +1896,6 @@
             document.getElementById('cashflow-date-label').textContent = showRecurringHelp ? 'Next due date' : 'Date';
             const liabilitySelect = document.getElementById('cashflow-liability');
             liabilitySelect.required = isEmi;
-            const member = document.getElementById('cashflow-member').value;
             const memberLiabilities = liabilities.filter(item => item.member === member && isAmortizingLoanType(item.type));
             liabilitySelect.replaceChildren(new Option(
                 memberLiabilities.length ? 'Select a loan' : 'Add a liability for this member first',
@@ -1828,6 +1918,25 @@
                 liabilitySelect.value = selectedLiabilityId;
             }
             updateEmiPreview();
+        }
+
+        function updateInvestmentPreview() {
+            const assetId = document.getElementById('cashflow-investment-asset').value;
+            const unitsInput = document.getElementById('cashflow-investment-units');
+            const preview = document.getElementById('cashflow-investment-preview');
+            unitsInput.required = Boolean(assetId);
+            unitsInput.disabled = !assetId;
+            const units = Number(unitsInput.value);
+            const amount = Number(document.getElementById('cashflow-amount').value);
+            if (!assetId) {
+                preview.textContent = 'Link a transfer to a mutual fund to track units and returns. Generic transfers remain unchanged.';
+                return;
+            }
+            if (!Number.isFinite(units) || units <= 0 || !Number.isFinite(amount) || amount <= 0) {
+                preview.textContent = 'Linked transactions change fund units and are included in returns. Amount and units must match the transaction NAV.';
+                return;
+            }
+            preview.textContent = `Transaction NAV: ₹${(amount / units).toFixed(4)} per unit.`;
         }
 
         function updateEmiAmountFromLoan() {
@@ -2329,8 +2438,45 @@
                 alert('Select a valid transaction category.');
                 return;
             }
+            const investmentAssetId = document.getElementById('cashflow-investment-asset').value;
+            const investmentUnits = Number(document.getElementById('cashflow-investment-units').value);
+            let investmentDetails = {};
+            if (investmentAssetId) {
+                const asset = portfolio.find(item =>
+                    item.id === investmentAssetId && item.type === 'Mutual Fund' && item.member === member
+                );
+                if (!asset || !['transfer-in', 'transfer-out'].includes(type) ||
+                    !isValidISODate(date) || date > todayLocalISO() ||
+                    !Number.isFinite(investmentUnits) || investmentUnits <= 0) {
+                    alert('Link a valid mutual fund and enter positive units for a past or current transfer date.');
+                    return;
+                }
+                investmentDetails = { assetId: asset.id, investmentUnits };
+                const proposedTransaction = {
+                    id: editId || 'validation-candidate',
+                    type,
+                    amount,
+                    date,
+                    ...investmentDetails
+                };
+                const proposedTransactions = editId
+                    ? cashflowTransactions.map(item => item.id === editId ? proposedTransaction : item)
+                    : [...cashflowTransactions, proposedTransaction];
+                const positionAtTradeDate = mutualFundPosition(asset, date, proposedTransactions, '');
+                const positionNow = mutualFundPosition(asset, todayLocalISO(), proposedTransactions, '');
+                if (!positionAtTradeDate.valid || !positionNow.valid) {
+                    alert('This linked sale exceeds the mutual-fund units held. Review the dated buy and sell transactions.');
+                    return;
+                }
+            } else if (document.getElementById('cashflow-investment-units').value) {
+                document.getElementById('cashflow-investment-units').value = '';
+            }
             const recurringEditId = document.getElementById('cashflow-recurring-edit-id').value;
             if (recurringEditId || document.getElementById('cashflow-recurring').checked) {
+                if (investmentAssetId) {
+                    alert('Linked mutual-fund trades cannot be recurring. Record each trade with its actual date and units.');
+                    return;
+                }
                 if (!['income', 'expense', 'emi', 'transfer-in', 'transfer-out'].includes(type) || !isValidISODate(date)) {
                     alert('Recurring schedules require a valid date and transaction type.');
                     return;
@@ -2434,8 +2580,19 @@
                             : {})
                     }
                     : {}),
-                ...emiDetails
+                ...emiDetails,
+                ...investmentDetails
             };
+            const proposedTransactions = editId
+                ? cashflowTransactions.map(item => item.id === editId ? transaction : item)
+                : [...cashflowTransactions, transaction];
+            const allFundPositionsValid = portfolio
+                .filter(item => item.type === 'Mutual Fund')
+                .every(item => mutualFundPosition(item, todayLocalISO(), proposedTransactions).valid);
+            if (!allFundPositionsValid) {
+                alert('This change would make a mutual-fund sale exceed the units held. Review linked trades before saving.');
+                return;
+            }
             if (editId) {
                 const index = cashflowTransactions.findIndex(item => item.id === editId);
                 if (index === -1) {
@@ -2461,10 +2618,11 @@
             document.getElementById('cashflow-edit-id').value = transaction.id;
             document.getElementById('cashflow-type').value = transaction.type;
             document.getElementById('cashflow-member').value = transaction.member;
-            updateCashflowCategories(transaction.category, transaction.liabilityId);
+            updateCashflowCategories(transaction.category, transaction.liabilityId, transaction.assetId);
             document.getElementById('cashflow-amount').value = transaction.amount;
             document.getElementById('cashflow-date').value = transaction.date;
             document.getElementById('cashflow-description').value = transaction.description;
+            document.getElementById('cashflow-investment-units').value = transaction.investmentUnits || '';
             document.getElementById('cashflow-cancel-edit').classList.remove('hidden');
             document.getElementById('cashflow-submit').innerText = 'Save changes';
             updateEmiPreview();
@@ -2571,8 +2729,16 @@
                 ? 'Delete this EMI transaction? Its principal repayment will be reversed in the linked loan balance. If it is the latest payment from a recurring schedule, that schedule’s due date will be restored.'
                 : 'Delete this transaction? If it is the latest payment from a recurring schedule, that schedule’s due date will be restored.';
             if (!confirm(confirmation)) return;
+            const proposedTransactions = cashflowTransactions.filter(item => item.id !== id);
+            const allFundPositionsValid = portfolio
+                .filter(item => item.type === 'Mutual Fund')
+                .every(item => mutualFundPosition(item, todayLocalISO(), proposedTransactions).valid);
+            if (!allFundPositionsValid) {
+                alert('This transaction cannot be deleted because later linked sales would exceed the remaining fund units.');
+                return;
+            }
             restoreRecurringScheduleForDeletedTransaction(transaction);
-            cashflowTransactions = cashflowTransactions.filter(item => item.id !== id);
+            cashflowTransactions = proposedTransactions;
             saveAndRefresh();
         }
 
@@ -2727,7 +2893,7 @@
             if (transaction.type === 'income') return 'income';
             if (transaction.type === 'expense') return 'expenses';
             if (transaction.type === 'emi') return 'emi';
-            if (transaction.type === 'transfer-out' && transaction.category === 'Investment contribution') return 'investments';
+            if (transaction.assetId || (transaction.type === 'transfer-out' && transaction.category === 'Investment contribution')) return 'investments';
             return 'transfers';
         }
 
@@ -2858,6 +3024,7 @@
                 const group = cashflowTransactionGroup(item);
                 const isPositive = item.type === 'income' || item.type === 'transfer-in';
                 const liability = item.type === 'emi' ? liabilities.find(record => record.id === item.liabilityId) : null;
+                const linkedAsset = item.assetId ? portfolio.find(asset => asset.id === item.assetId) : null;
                 const emiBreakdown = item.type === 'emi' ? emiBreakdownForTransaction(item) : null;
                 if (item.type === 'emi' && !emiBreakdown) {
                     throw new Error(`Could not calculate the loan interest for transaction ${item.id}.`);
@@ -2871,7 +3038,7 @@
                         : group === 'investments' ? 'text-violet-700' : 'text-slate-600';
                 const transactionDetails = item.type === 'emi'
                     ? `${liability?.name || 'Loan'} — principal ${fmt(emiBreakdown.principalAmount)}, interest ${fmt(emiBreakdown.interestAmount)}`
-                    : item.description ? `${item.category} — ${item.description}` : item.category;
+                    : `${item.category}${linkedAsset ? ` — ${linkedAsset.name} (${Number(item.investmentUnits).toLocaleString()} units)` : ''}${item.description ? ` — ${item.description}` : ''}`;
                 [
                     ['Date', item.date, 'p-3 text-slate-600'],
                     ['Type', typeLabels[item.type] || item.type, `p-3 font-semibold ${typeColor}`],
@@ -2928,7 +3095,7 @@
                 category.className = 'mt-2 text-xs text-slate-600';
                 category.textContent = item.type === 'emi'
                     ? `${liability?.name || 'Loan'} · principal ${fmt(emiBreakdown.principalAmount)} · interest ${fmt(emiBreakdown.interestAmount)}`
-                    : item.category;
+                    : `${item.category}${linkedAsset ? ` · ${linkedAsset.name} (${Number(item.investmentUnits).toLocaleString()} units)` : ''}`;
                 const cardFooter = document.createElement('div');
                 cardFooter.className = 'mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-2';
                 const badgeClasses = {
@@ -3096,7 +3263,7 @@
                         <td data-label="Asset class" class="p-3.5">${clsBadge}</td>
                         <td data-label="Units / Qty" class="p-3.5 text-right font-mono text-slate-600">${Number(r.units).toLocaleString()}</td>
                         <td data-label="Purchase NAV (₹)" class="p-3.5 text-right font-mono text-slate-600">₹${Number(r.ep).toFixed(2)}</td>
-                        <td data-label="Current NAV (₹)" class="p-3.5 text-right font-mono text-slate-600">₹${Number(item.currentNav || r.ep).toFixed(2)}</td>
+                        <td data-label="Current NAV (₹)" title="${item.navDate ? `NAV date: ${item.navDate}` : 'NAV date unavailable'}" class="p-3.5 text-right font-mono text-slate-600"><span>₹${Number(item.currentNav || r.ep).toFixed(2)}</span><span class="block text-[10px] text-slate-400">${item.navDate || 'date n/a'}</span></td>
                         <td data-label="Total Current Value" class="p-3.5 text-right font-mono font-semibold text-slate-800">${fmt(r.cur)}</td>
                         ${retCell}
                         <td data-label="SIP (Mo.)" class="p-3.5 text-center font-mono text-indigo-600">₹${sip.toLocaleString()}</td>
@@ -3286,6 +3453,7 @@
             document.getElementById('add-modal').classList.add('flex');
             document.getElementById('add-form').reset();
             document.getElementById('edit-asset-id').value = "";
+            document.getElementById('asset-scheme-code').value = '';
             document.getElementById('modal-title').innerText = "Add Asset";
             document.getElementById('btn-submit-form').innerText = "Save Asset";
             const sel = document.getElementById('asset-category');
@@ -3307,7 +3475,7 @@
             document.getElementById('asset-category').value = item.type;
             toggleCategoryFields(item.type);
             document.getElementById('asset-name').value = item.name;
-            document.getElementById('asset-units').value = item.units || 1;
+            document.getElementById('asset-units').value = item.units ?? 1;
             document.getElementById('asset-purchase-price').value = item.price || '';
             document.getElementById('asset-current-nav').value = item.currentNav || item.price || 0;
             document.getElementById('asset-sip').value = item.sip || 0;
@@ -3315,6 +3483,7 @@
             document.getElementById('asset-category-raw').value = item.category || '';
             document.getElementById('asset-valuation-date').value = item.valuationDate || '';
             document.getElementById('asset-value-source').value = item.valueSource || '';
+            document.getElementById('asset-scheme-code').value = item.schemeCode || '';
         }
 
         function closeAddModal() {
@@ -3336,7 +3505,13 @@
                     data.slice(0, 10).forEach(fund => {
                         const div = document.createElement('div');
                         div.className = "p-2.5 hover:bg-indigo-50 cursor-pointer text-xs border-b border-slate-100 last:border-none transition text-slate-700 font-medium flex justify-between items-center";
-                        div.innerHTML = `<span class="truncate pr-2">${fund.schemeName}</span><span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 flex-shrink-0">NAV</span>`;
+                        const name = document.createElement('span');
+                        name.className = 'truncate pr-2';
+                        name.textContent = fund.schemeName;
+                        const badge = document.createElement('span');
+                        badge.className = 'flex-shrink-0 rounded border border-indigo-100 bg-indigo-50 px-1.5 py-0.5 font-mono text-[10px] text-indigo-600';
+                        badge.textContent = 'NAV';
+                        div.append(name, badge);
                         div.onclick = () => selectMutualFund(fund.schemeCode, fund.schemeName);
                         box.appendChild(div);
                     });
@@ -3353,10 +3528,12 @@
 
         async function selectMutualFund(code, name) {
             document.getElementById('asset-name').value = name;
+            document.getElementById('asset-scheme-code').value = String(code);
             document.getElementById('mf-results').classList.add('hidden');
             document.getElementById('mf-search-input').value = '';
             try {
                 const res = await fetch(`https://api.mfapi.in/mf/${code}`);
+                if (!res.ok) throw new Error(`NAV request failed (${res.status}).`);
                 const data = await res.json();
                 if (data && data.data && data.data.length > 0) {
                     document.getElementById('asset-current-nav').value = parseFloat(data.data[0].nav);
@@ -3368,6 +3545,67 @@
             } catch (err) { console.error('Error fetching scheme NAV:', err); }
         }
 
+        let navRefreshPromise = null;
+        async function refreshMutualFundNavs() {
+            if (navRefreshPromise) return navRefreshPromise;
+            const funds = portfolio.filter(item => item.type === 'Mutual Fund');
+            const status = document.getElementById('mutual-fund-nav-status');
+            const button = document.getElementById('refresh-mutual-fund-navs');
+            if (!funds.length) {
+                status.textContent = 'Add a mutual fund to refresh NAVs.';
+                return;
+            }
+            button.disabled = true;
+            button.textContent = 'Refreshing…';
+            status.textContent = 'Fetching latest NAVs…';
+            navRefreshPromise = Promise.all(funds.map(async item => {
+                try {
+                    let schemeCode = item.schemeCode;
+                    if (!schemeCode) {
+                        const searchResponse = await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(item.name)}`);
+                        if (!searchResponse.ok) throw new Error(`Fund search failed (${searchResponse.status}).`);
+                        const matches = await searchResponse.json();
+                        const exactMatches = Array.isArray(matches)
+                            ? matches.filter(match => String(match.schemeName || '').trim().toLowerCase() === item.name.trim().toLowerCase())
+                            : [];
+                        if (exactMatches.length !== 1) {
+                            throw new Error('Select this exact scheme from the fund search in Edit Asset to enable automatic NAV refresh.');
+                        }
+                        schemeCode = String(exactMatches[0].schemeCode);
+                    }
+                    const navResponse = await fetch(`https://api.mfapi.in/mf/${encodeURIComponent(schemeCode)}/latest`);
+                    if (!navResponse.ok) throw new Error(`NAV request failed (${navResponse.status}).`);
+                    const data = await navResponse.json();
+                    const latest = Array.isArray(data.data) ? data.data[0] : null;
+                    const nav = Number(latest?.nav);
+                    const dateMatch = /^(\d{2})-(\d{2})-(\d{4})$/.exec(latest?.date || '');
+                    if (!Number.isFinite(nav) || nav <= 0 || !dateMatch) throw new Error('MFAPI returned an invalid NAV or date.');
+                    item.schemeCode = schemeCode;
+                    item.currentNav = nav;
+                    item.navDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+                    item.valuationDate = item.navDate;
+                    item.valueSource = 'MFAPI';
+                    return { success: true };
+                } catch (error) {
+                    console.error(`Unable to refresh NAV for ${item.name}:`, error);
+                    return { success: false, error };
+                }
+            }));
+            try {
+                const results = await navRefreshPromise;
+                const updated = results.filter(result => result.success).length;
+                const failed = results.length - updated;
+                if (updated) saveAndRefresh();
+                status.textContent = failed
+                    ? `${updated} NAV${updated === 1 ? '' : 's'} updated; ${failed} failed. See console for details.`
+                    : `${updated} NAV${updated === 1 ? '' : 's'} updated from MFAPI.`;
+            } finally {
+                navRefreshPromise = null;
+                button.disabled = false;
+                button.textContent = 'Refresh NAVs';
+            }
+        }
+
         function handleFormSubmit(e) {
             e.preventDefault();
             const editId = document.getElementById('edit-asset-id').value;
@@ -3376,21 +3614,50 @@
             const pp = parseFloat(document.getElementById('asset-purchase-price').value);
             const priceVal = (!isNaN(pp) && pp > 0) ? pp : nav;
             const valuationDate = document.getElementById('asset-valuation-date').value;
+            const existingAsset = editId ? portfolio.find(item => item.id === editId) : null;
             if (valuationDate && !/^\d{4}-\d{2}-\d{2}$/.test(valuationDate)) {
                 alert('Enter a valid valuation date.');
+                return;
+            }
+            if (existingAsset && cashflowTransactions.some(transaction => transaction.assetId === editId)) {
+                const submittedUnits = Number(document.getElementById('asset-units').value);
+                const submittedPrice = Number.isFinite(pp) && pp > 0 ? pp : nav;
+                const submittedSchemeCode = document.getElementById('asset-scheme-code').value;
+                if (category !== 'Mutual Fund' || document.getElementById('asset-member').value !== existingAsset.member ||
+                    document.getElementById('asset-name').value.trim() !== existingAsset.name ||
+                    submittedUnits !== Number(existingAsset.units ?? 1) ||
+                    submittedPrice !== Number(existingAsset.price || existingAsset.currentNav || 0) ||
+                    (submittedSchemeCode && existingAsset.schemeCode && submittedSchemeCode !== existingAsset.schemeCode)) {
+                    alert('This fund has linked transactions. Its name, member, scheme, opening units, and purchase NAV cannot be changed.');
+                    return;
+                }
+            }
+            const enteredUnits = parseFloat(document.getElementById('asset-units').value);
+            if (category === 'Mutual Fund' &&
+                (!Number.isFinite(enteredUnits) || enteredUnits < 0 || !Number.isFinite(nav) || nav <= 0 ||
+                    (enteredUnits > 0 && (!Number.isFinite(priceVal) || priceVal <= 0)))) {
+                alert('Enter non-negative mutual-fund units and positive purchase and current NAV values.');
                 return;
             }
             const fields = {
                 member: document.getElementById('asset-member').value,
                 type: category,
                 name: document.getElementById('asset-name').value,
-                units: parseFloat(document.getElementById('asset-units').value) || 1,
+                units: category === 'Mutual Fund' || category === 'Stock'
+                    ? (Number.isFinite(enteredUnits)
+                        ? enteredUnits
+                        : 1)
+                    : 1,
                 price: priceVal,
                 currentNav: nav,
                 sip: parseFloat(document.getElementById('asset-sip').value) || 0,
                 assetClass: document.getElementById('asset-class').value,
                 valuationDate,
-                valueSource: document.getElementById('asset-value-source').value.trim()
+                valueSource: document.getElementById('asset-value-source').value.trim(),
+                navDate: category === 'Mutual Fund' ? (valuationDate || undefined) : undefined,
+                schemeCode: category === 'Mutual Fund'
+                    ? (document.getElementById('asset-scheme-code').value || undefined)
+                    : undefined
             };
             const rawCat = document.getElementById('asset-category-raw').value;
             if (rawCat) fields.category = rawCat;
@@ -3405,6 +3672,10 @@
         }
 
         function deleteAsset(id) {
+            if (cashflowTransactions.some(transaction => transaction.assetId === id)) {
+                alert('Remove or unlink this fund’s transactions before deleting the asset.');
+                return;
+            }
             if (confirm('Are you sure you want to remove this asset?')) {
                 portfolio = portfolio.filter(item => item.id !== id);
                 saveAndRefresh();
