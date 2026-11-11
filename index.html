@@ -22,6 +22,92 @@
             transform: rotate(180deg);
         }
 
+        .record-action-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        .record-action-button {
+            display: inline-flex;
+            min-width: 44px;
+            min-height: 44px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            color: #64748b;
+            transition: background-color 150ms ease, color 150ms ease;
+        }
+
+        .record-action-button:focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+        }
+
+        .record-action-edit:hover {
+            background-color: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .record-action-delete:hover {
+            background-color: #fff1f2;
+            color: #e11d48;
+        }
+
+        .record-add-button {
+            display: inline-flex;
+            min-height: 44px;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1rem;
+            box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+            transition: background-color 150ms ease, box-shadow 150ms ease;
+        }
+
+        .record-add-button:focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+        }
+
+        .record-add-indigo {
+            background-color: #4f46e5;
+        }
+
+        .record-add-indigo:hover {
+            background-color: #4338ca;
+        }
+
+        .record-add-violet {
+            background-color: #6d28d9;
+        }
+
+        .record-add-violet:hover {
+            background-color: #5b21b6;
+        }
+
+        .record-add-emerald {
+            background-color: #047857;
+        }
+
+        .record-add-emerald:hover {
+            background-color: #065f46;
+        }
+
+        .record-add-rose {
+            background-color: #be123c;
+        }
+
+        .record-add-rose:hover {
+            background-color: #9f1239;
+        }
+
         @media (max-width: 639px) {
             input:not([type="hidden"]),
             select:not([multiple]) {
@@ -206,34 +292,14 @@
                 text-align: center;
             }
 
-            #cashflow-table-scroll {
-                overflow: visible;
-            }
-
             #liability-table-scroll {
                 overflow: visible;
-            }
-
-            #cashflow-table-scroll table {
-                display: block;
-                width: 100%;
-                min-width: 0;
             }
 
             #liability-table-scroll table {
                 display: block;
                 width: 100%;
                 min-width: 0;
-            }
-
-            #cashflow-table-scroll thead {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                white-space: nowrap;
-                clip-path: inset(50%);
             }
 
             #liability-table-scroll thead {
@@ -289,60 +355,17 @@
                 grid-column: 1 / -1;
             }
 
-            #cashflow-table-body {
-                display: grid;
-                gap: 0.75rem;
-                padding: 0.75rem;
-            }
-
-            #cashflow-table-body tr:not([data-empty]) {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.5rem;
-                padding: 0.75rem;
-                border: 1px solid #e2e8f0;
-                border-radius: 0.75rem;
-                background: #fff;
-                box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
-            }
-
-            #cashflow-table-body tr:not([data-empty]) td {
-                display: flex;
-                min-width: 0;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.2rem;
-                padding: 0.35rem;
-                border: 0;
-                text-align: left;
-                overflow-wrap: anywhere;
-            }
-
-            #cashflow-table-body tr:not([data-empty]) td::before {
-                color: #64748b;
-                content: attr(data-label);
-                font-family: ui-sans-serif, system-ui, sans-serif;
-                font-size: 0.625rem;
-                font-weight: 600;
-                line-height: 1.25;
-                text-transform: uppercase;
-            }
-
-            #cashflow-table-body tr:not([data-empty]) td:first-child,
-            #cashflow-table-body tr:not([data-empty]) td:last-child {
-                grid-column: 1 / -1;
-            }
-
-            #cashflow-table-body tr[data-empty] td {
-                display: block;
-                padding: 1rem 0.5rem;
-                text-align: center;
-            }
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
-
+    <div id="drive-page-loader" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm" role="status" aria-live="polite" aria-hidden="true">
+        <div class="flex w-full max-w-sm flex-col items-center rounded-2xl bg-white px-8 py-7 text-center shadow-2xl">
+            <span class="h-12 w-12 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600" aria-hidden="true"></span>
+            <p id="drive-page-loader-message" class="mt-4 text-base font-semibold text-slate-800">Working with Google Drive…</p>
+            <p class="mt-1 text-sm text-slate-500">Please wait while your data is being processed.</p>
+        </div>
+    </div>
     <section id="login-screen" class="flex flex-grow items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-slate-100 px-4 py-12">
         <div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-lg sm:p-10">
             <div class="mx-auto mb-5 inline-flex rounded-xl bg-indigo-700 p-3 text-2xl text-white shadow"><i class="fa-solid fa-landmark"></i></div>
@@ -383,7 +406,7 @@
 
     <main id="dashboard-main" class="hidden max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-grow w-full space-y-4 sm:space-y-6">
         <div id="drive-notice" class="hidden rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status"></div>
-        <nav class="grid grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm sm:gap-2" role="tablist" aria-label="Wealth tracker sections" onkeydown="handleDashboardTabKeydown(event)">
+        <nav class="sticky top-0 z-30 grid grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm sm:gap-2" role="tablist" aria-label="Wealth tracker sections" onkeydown="handleDashboardTabKeydown(event)">
             <button id="assets-tab" type="button" role="tab" aria-selected="true" aria-controls="assets-tab-content" tabindex="0" onclick="switchDashboardTab('assets')" class="min-h-[44px] rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white">
                 <i class="fa-solid fa-chart-pie mr-1.5" aria-hidden="true"></i>Assets & Net Worth
             </button>
@@ -445,7 +468,7 @@
 
         <!-- MARKET ASSETS -->
         <section class="space-y-4">
-            <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-indigo-600">
                 <div class="flex flex-1 flex-wrap items-center gap-2">
                     <h3 class="w-full sm:w-auto">
                         <button type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="true" aria-controls="market-content" onclick="toggleSection(this)">
@@ -462,7 +485,7 @@
                     </select>
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
                     <button onclick="document.getElementById('excelFileInput').click()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow"><i class="fa-solid fa-file-excel"></i><span>Import Groww Data</span></button>
-                    <button onclick="openAddModal('Mutual Fund')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow"><i class="fa-solid fa-plus"></i><span>Add</span></button>
+                    <button type="button" onclick="openAddModal('Mutual Fund')" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
                 </div>
             </div>
             <div id="market-content">
@@ -504,7 +527,7 @@
                     </h3>
                     <span class="bg-violet-100 text-violet-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">EPF / PPF / SSY / NPS</span>
                 </div>
-                <button onclick="openAddModal('NPS')" class="bg-violet-700 hover:bg-violet-800 text-white px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow"><i class="fa-solid fa-plus"></i><span>Add</span></button>
+                <button type="button" onclick="openAddModal('NPS')" class="record-add-button record-add-violet"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
             </div>
             <div id="schemes-content">
                 <div id="schemes-tiles" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
@@ -543,7 +566,7 @@
                     </h3>
                     <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Cash / Property / Other</span>
                 </div>
-                <button onclick="openAddModal('Personal')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow"><i class="fa-solid fa-plus"></i><span>Add</span></button>
+                <button type="button" onclick="openAddModal('Personal')" class="record-add-button record-add-emerald"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
             </div>
             <div id="personal-content">
                 <div id="personal-tiles" class="grid grid-cols-2 gap-3"></div>
@@ -568,60 +591,87 @@
             </div>
         </section>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-800">Liabilities</h2>
-                    <p class="mt-1 text-xs text-slate-500">Outstanding balances are subtracted from net worth. For loans, enter the bank’s annual rate, remaining term, and regular EMI. Interest is estimated by monthly compounding; check statements because banks may use daily accrual or variable rates.</p>
-                </div>
+        <section class="space-y-4">
+            <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-rose-600">
+                <h3>
+                    <button id="liability-section-toggle" type="button" class="section-toggle flex w-full items-center justify-start gap-2 text-left font-bold text-slate-800 text-base sm:text-lg" aria-expanded="true" aria-controls="liability-content" onclick="toggleSection(this)">
+                        <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
+                        <span><i class="fa-solid fa-scale-balanced text-rose-600 mr-2" aria-hidden="true"></i>Liabilities</span>
+                    </button>
+                </h3>
+                <button type="button" onclick="openLiabilityModal()" class="record-add-button record-add-rose">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span>
+                </button>
             </div>
-            <form id="liability-form" onsubmit="handleLiabilitySubmit(event)" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <input id="liability-edit-id" type="hidden" value="">
-                <label class="text-xs font-semibold text-slate-700">Liability name
-                    <input id="liability-name" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Home loan">
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Type
-                    <select id="liability-type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="updateLiabilityTermRequirements(this.value)"></select>
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Member
-                    <select id="liability-member" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option>Self</option><option>Spouse</option></select>
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Outstanding balance (₹)
-                    <input id="liability-balance" type="number" min="0" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0.00">
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Balance as of
-                    <input id="liability-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Annual interest rate (%)
-                    <input id="liability-rate" type="number" min="0" max="100" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 8.5">
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Remaining tenure (months)
-                    <input id="liability-tenure" type="number" min="0" max="1200" step="1" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 180">
-                </label>
-                <label class="text-xs font-semibold text-slate-700">Regular monthly EMI (₹)
-                    <input id="liability-emi" type="number" min="0.01" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 25000">
-                </label>
-                <p class="text-xs text-slate-500 sm:col-span-2 lg:col-span-3">For home, personal, vehicle, and education loans, these bank details are needed to estimate the interest portion of each payment.</p>
-                <div class="flex items-end justify-end gap-2">
-                    <button id="liability-cancel-edit" type="button" onclick="resetLiabilityForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel edit</button>
-                    <button id="liability-submit" type="submit" class="min-h-[44px] rounded-lg bg-rose-700 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-rose-800">Add liability</button>
+            <div id="liability-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                <p class="text-xs text-slate-500">Outstanding balances are subtracted from net worth. For loans, enter the bank’s annual rate, remaining term, and regular EMI. Interest is estimated by monthly compounding; check statements because banks may use daily accrual or variable rates.</p>
+                <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm">
+                    <span class="font-semibold text-rose-900">Total liabilities for this view</span>
+                    <span id="liability-total" class="font-bold text-rose-800">₹0</span>
                 </div>
-            </form>
-            <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm">
-                <span class="font-semibold text-rose-900">Total liabilities for this view</span>
-                <span id="liability-total" class="font-bold text-rose-800">₹0</span>
-            </div>
-            <div id="liability-table-scroll" class="mt-3 overflow-x-auto">
-                <table class="w-full min-w-[760px] text-left text-sm">
-                    <thead><tr class="bg-slate-100 text-xs uppercase text-slate-600"><th class="p-3">Liability</th><th class="p-3">Member</th><th class="p-3 text-right">Balance</th><th class="p-3">Remaining term</th><th class="p-3">As of</th><th class="p-3 text-center">Actions</th></tr></thead>
-                    <tbody id="liability-table-body" class="divide-y divide-slate-100"></tbody>
-                </table>
+                <div id="liability-table-scroll" class="mt-3 overflow-x-auto">
+                    <table class="w-full min-w-[760px] text-left text-sm">
+                        <thead><tr class="bg-slate-100 text-xs uppercase text-slate-600"><th class="p-3">Liability</th><th class="p-3">Member</th><th class="p-3 text-right">Balance</th><th class="p-3">Remaining term</th><th class="p-3">Projected closure</th><th class="p-3">As of</th><th class="p-3 text-center">Actions</th></tr></thead>
+                        <tbody id="liability-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
+        <div id="liability-modal" class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="liability-modal-title">
+            <div class="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-xl sm:p-6">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <h2 id="liability-modal-title" class="text-lg font-bold text-slate-900">Add liability</h2>
+                    <button type="button" onclick="closeLiabilityModal()" class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Close liability form">
+                        <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <form id="liability-form" onsubmit="handleLiabilitySubmit(event)" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <input id="liability-edit-id" type="hidden" value="">
+                    <label class="text-xs font-semibold text-slate-700">Liability name
+                        <input id="liability-name" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Home loan">
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700">Type
+                        <select id="liability-type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="updateLiabilityTermRequirements(this.value)"></select>
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700">Member
+                        <select id="liability-member" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option>Self</option><option>Spouse</option></select>
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700">Outstanding balance (₹)
+                        <input id="liability-balance" type="number" min="0" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0.00">
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700">Balance as of
+                        <input id="liability-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700">Annual interest rate (%)
+                        <input id="liability-rate" type="number" min="0" max="100" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 8.5">
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700">Remaining tenure (months)
+                        <input id="liability-tenure" type="number" min="0" max="1200" step="1" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 180">
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700">Regular monthly EMI (₹)
+                        <input id="liability-emi" type="number" min="0.01" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 25000">
+                    </label>
+                    <p class="text-xs text-slate-500 sm:col-span-2 lg:col-span-3">For home, personal, vehicle, and education loans, these bank details are needed to estimate the interest portion of each payment.</p>
+                    <div class="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-3">
+                        <button id="liability-cancel-edit" type="button" onclick="closeLiabilityModal()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+                        <button id="liability-submit" type="submit" class="record-add-button record-add-rose">Add liability</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         </div>
 
         <section id="cashflow-tab-content" role="tabpanel" aria-labelledby="cashflow-tab" class="hidden space-y-4 sm:space-y-6">
-            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <section class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
+                    <h3>
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="cash-settings-content" onclick="toggleSection(this)">
+                            <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
+                            <span><i class="fa-solid fa-wallet mr-2 text-indigo-600" aria-hidden="true"></i>Cash balance settings</span>
+                        </button>
+                    </h3>
+                </div>
+                <div id="cash-settings-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Income & Expenses</h2>
@@ -647,9 +697,19 @@
                     </label>
                 </div>
                 <p class="mt-2 text-[11px] text-slate-500">The opening balance is as of its balance date; only transactions dated after that date change the running balance.</p>
-            </div>
+                </div>
+            </section>
 
-            <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <section class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
+                    <h3>
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="cashflow-report-content" onclick="toggleSection(this)">
+                            <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
+                            <span><i class="fa-solid fa-chart-column mr-2 text-indigo-600" aria-hidden="true"></i>Cash-flow report</span>
+                        </button>
+                    </h3>
+                </div>
+                <div id="cashflow-report-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <h3 class="font-bold text-slate-800">Cash-flow report</h3>
@@ -675,23 +735,120 @@
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
                         <h4 class="text-sm font-semibold text-slate-700">Emergency-fund reference</h4>
-                        <p class="mt-1 text-xs text-slate-500">A six-month essential-expense benchmark; adjust your target to fit your circumstances.</p>
-                        <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                            <label class="text-xs font-semibold text-slate-700">Essential monthly expenses — Self (₹)
-                                <input id="essential-expenses-self" type="number" min="0" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="setEssentialExpenses('Self', this.value)">
-                            </label>
-                            <label class="text-xs font-semibold text-slate-700">Essential monthly expenses — Spouse (₹)
-                                <input id="essential-expenses-spouse" type="number" min="0" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="setEssentialExpenses('Spouse', this.value)">
-                            </label>
+                        <p class="mt-1 text-xs text-slate-500">Average monthly outflow from all recorded expense categories and full EMI payments over the latest 3 calendar months, including the current month. Unpaid recurring items and transfers are excluded.</p>
+                        <div id="emergency-fund-average" class="mt-3 text-sm font-semibold text-slate-800"></div>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <span id="emergency-fund-status" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"></span>
+                            <div id="emergency-fund-summary" class="text-sm text-slate-700"></div>
                         </div>
-                        <div id="emergency-fund-summary" class="mt-2 text-sm text-slate-700"></div>
+                        <p class="mt-2 text-xs text-slate-500">Status: red under 3 months, amber for 3 to under 6 months, and green at 6 months or more.</p>
                     </div>
+                </div>
                 </div>
             </section>
 
-            <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-                <h3 class="text-base font-bold text-slate-800">Add a transaction</h3>
-                <form id="cashflow-form" onsubmit="handleCashflowSubmit(event)" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <section class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
+                    <h3>
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="recurring-transactions-content" onclick="toggleSection(this)">
+                            <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
+                            <span><i class="fa-solid fa-repeat mr-2 text-indigo-600" aria-hidden="true"></i>Recurring transactions</span>
+                        </button>
+                    </h3>
+                    <button type="button" onclick="openCashflowModal(true)" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
+                </div>
+                <div id="recurring-transactions-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                    <p class="text-xs text-slate-500">Record an occurrence to add it to your transactions. Each occurrence records today’s date and moves the next due date forward by one month.</p>
+                    <div id="recurring-transactions-list" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
+                    <h3>
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="cashflow-transactions-content" onclick="toggleSection(this)">
+                            <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
+                            <span><i class="fa-solid fa-list mr-2 text-indigo-600" aria-hidden="true"></i>Transactions</span>
+                        </button>
+                    </h3>
+                    <button type="button" onclick="openCashflowModal(false)" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
+                </div>
+                <div id="cashflow-transactions-content" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <div class="border-b border-slate-200 px-4 py-3 sm:px-5">
+                        <div class="flex flex-wrap items-end justify-between gap-3">
+                            <div>
+                                <h3 class="font-bold text-slate-800">Transaction history</h3>
+                                <p class="mt-1 text-xs text-slate-500">Choose a month and type card to filter transactions.</p>
+                            </div>
+                            <label class="text-xs font-semibold text-slate-700">Month
+                                <select id="transaction-month-filter" class="min-h-[40px] min-w-[160px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="setTransactionMonthFilter(this.value)">
+                                    <option value="all">All months</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="transaction-type-cards" class="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-6" aria-label="Filter transactions by type"></div>
+                    <div id="transaction-mobile-cards" class="grid grid-cols-1 gap-3 border-t border-slate-100 p-4 sm:hidden"></div>
+                    <div id="cashflow-table-scroll" class="hidden overflow-x-auto border-t border-slate-100 sm:block">
+                        <table class="w-full min-w-[700px] text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-xs uppercase tracking-wider text-slate-600">
+                                    <th class="p-3 font-semibold">Date</th>
+                                    <th class="p-3 font-semibold">Type</th>
+                                    <th class="p-3 font-semibold">Category / Payment details</th>
+                                    <th class="p-3 font-semibold">Member</th>
+                                    <th class="p-3 font-semibold text-right">Amount</th>
+                                    <th class="p-3 font-semibold text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cashflow-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <section id="planning-tab-content" role="tabpanel" aria-labelledby="planning-tab" class="hidden space-y-4 sm:space-y-6">
+            <section class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
+                    <h3>
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="true" aria-controls="goals-content" onclick="toggleSection(this)">
+                            <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
+                            <span><i class="fa-solid fa-bullseye mr-2 text-indigo-600" aria-hidden="true"></i>Financial goals</span>
+                        </button>
+                    </h3>
+                    <button type="button" onclick="openGoalModal()" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
+                </div>
+                <div id="goals-content" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                    <p class="text-xs text-slate-500">Monthly amounts are simple targets based on time remaining and do not assume investment returns.</p>
+                    <div id="goals-list" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
+                </div>
+            </section>
+            <section class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 border-l-4 border-l-amber-500 bg-amber-50 p-4">
+                    <h3>
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left font-bold text-amber-900" aria-expanded="true" aria-controls="planning-notes-content" onclick="toggleSection(this)">
+                            <i class="section-chevron fa-solid fa-chevron-up text-xs text-amber-700" aria-hidden="true"></i>
+                            <span>Planning notes</span>
+                        </button>
+                    </h3>
+                </div>
+                <div id="planning-notes-content" class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <p class="text-sm text-amber-900">Concentration and valuation-age indicators are prompts to review your data, not investment recommendations. Check current market values and loan balances against statements before relying on your net-worth estimate.</p>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <div id="cashflow-modal" class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="cashflow-modal-title">
+        <div class="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-xl sm:p-6">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <h2 id="cashflow-modal-title" class="text-lg font-bold text-slate-900">Add transaction</h2>
+                <button type="button" onclick="resetCashflowForm()" class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Close transaction form">
+                    <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form id="cashflow-form" onsubmit="handleCashflowSubmit(event)" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <input id="cashflow-edit-id" type="hidden" value="">
                     <input id="cashflow-recurring-edit-id" type="hidden" value="">
                     <label class="text-xs font-semibold text-slate-700">Type
@@ -732,49 +889,24 @@
                         <input id="cashflow-recurring" type="checkbox" class="h-5 w-5 accent-indigo-600" onchange="updateCashflowCategories(document.getElementById('cashflow-category').value, document.getElementById('cashflow-liability').value)">
                         Make this a monthly recurring transaction
                     </label>
-                    <p id="cashflow-recurring-help" class="hidden text-xs text-slate-500 sm:col-span-2 lg:col-span-3">This creates a schedule only. Use “Mark paid” below to record each occurrence in your transactions and update cash and any linked loan balance.</p>
+                    <p id="cashflow-recurring-help" class="hidden text-xs text-slate-500 sm:col-span-2 lg:col-span-3">This creates a schedule only. Use “Record occurrence” below to add each item to your transactions and update cash flow. EMI payments update the linked loan balance; transfers do not automatically change asset records.</p>
                     <div class="flex items-center justify-end gap-2 sm:col-span-2 lg:col-span-3">
                         <button id="cashflow-cancel-edit" type="button" onclick="resetCashflowForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel edit</button>
-                        <button id="cashflow-submit" type="submit" class="min-h-[44px] rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700">Add transaction</button>
+                        <button id="cashflow-submit" type="submit" class="record-add-button record-add-indigo">Add transaction</button>
                     </div>
                 </form>
-            </section>
+        </div>
+    </div>
 
-            <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-                <h3 class="text-base font-bold text-slate-800">Recurring transactions</h3>
-                <p class="mt-1 text-xs text-slate-500">Mark an item paid to record it in your transactions. Each payment records today’s date and moves the next due date forward by one month.</p>
-                <div id="recurring-transactions-list" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
-            </section>
-
-            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-200 px-4 py-3 sm:px-5">
-                    <h3 class="font-bold text-slate-800">Transactions</h3>
-                </div>
-                <div id="cashflow-table-scroll" class="overflow-x-auto">
-                    <table class="w-full min-w-[700px] text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-100 text-xs uppercase tracking-wider text-slate-600">
-                                <th class="p-3 font-semibold">Date</th>
-                                <th class="p-3 font-semibold">Type</th>
-                                <th class="p-3 font-semibold">Category / Payment details</th>
-                                <th class="p-3 font-semibold">Member</th>
-                                <th class="p-3 font-semibold text-right">Amount</th>
-                                <th class="p-3 font-semibold text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cashflow-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
-                    </table>
-                </div>
-            </section>
-        </section>
-
-        <section id="planning-tab-content" role="tabpanel" aria-labelledby="planning-tab" class="hidden space-y-4 sm:space-y-6">
-            <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-800">Financial goals</h2>
-                    <p class="mt-1 text-xs text-slate-500">Monthly amounts are simple targets based on time remaining and do not assume investment returns.</p>
-                </div>
-                <form id="goal-form" onsubmit="handleGoalSubmit(event)" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div id="goal-modal" class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="goal-modal-title">
+        <div class="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-xl sm:p-6">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <h2 id="goal-modal-title" class="text-lg font-bold text-slate-900">Add goal</h2>
+                <button type="button" onclick="resetGoalForm()" class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Close goal form">
+                    <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+                <form id="goal-form" onsubmit="handleGoalSubmit(event)" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <input id="goal-edit-id" type="hidden" value="">
                     <label class="text-xs font-semibold text-slate-700">Goal name
                         <input id="goal-name" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Education fund">
@@ -791,19 +923,13 @@
                     <label class="text-xs font-semibold text-slate-700">Target date
                         <input id="goal-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
                     </label>
-                    <div class="flex items-end justify-end gap-2">
-                        <button id="goal-cancel-edit" type="button" onclick="resetGoalForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel edit</button>
-                        <button id="goal-submit" type="submit" class="min-h-[44px] rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700">Add goal</button>
+                    <div class="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-3">
+                        <button id="goal-cancel-edit" type="button" onclick="resetGoalForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+                        <button id="goal-submit" type="submit" class="record-add-button record-add-indigo">Add goal</button>
                     </div>
                 </form>
-                <div id="goals-list" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
-            </section>
-            <section class="rounded-xl border border-slate-200 bg-amber-50 p-4 sm:p-5">
-                <h2 class="font-bold text-amber-900">Planning notes</h2>
-                <p class="mt-2 text-sm text-amber-900">Concentration and valuation-age indicators are prompts to review your data, not investment recommendations. Check current market values and loan balances against statements before relying on your net-worth estimate.</p>
-            </section>
-        </section>
-    </main>
+        </div>
+    </div>
 
     <!-- Add / Edit Asset Modal -->
     <div id="add-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-start sm:items-center justify-center z-50 p-4 overflow-y-auto">
@@ -897,7 +1023,6 @@
         const INCLUDE_CASH_STORAGE_KEY = 'wealthpulse_include_cash_balance';
         const LIABILITIES_STORAGE_KEY = 'wealthpulse_liabilities';
         const GOALS_STORAGE_KEY = 'wealthpulse_goals';
-        const ESSENTIAL_EXPENSES_STORAGE_KEY = 'wealthpulse_essential_expenses';
 
         let portfolio = JSON.parse(localStorage.getItem('wealthpulse_portfolio')) || [
             { id: '1', name: 'Parag Parikh Flexi Cap Fund', member: 'Self', type: 'Mutual Fund', units: 1250.45, price: 78.50, currentNav: 85.20, sip: 10000 },
@@ -915,9 +1040,10 @@
         let includeCashBalance = localStorage.getItem(INCLUDE_CASH_STORAGE_KEY) === 'true';
         let liabilities = JSON.parse(localStorage.getItem(LIABILITIES_STORAGE_KEY) || '[]');
         let financialGoals = JSON.parse(localStorage.getItem(GOALS_STORAGE_KEY) || '[]');
-        let monthlyEssentialExpenses = JSON.parse(localStorage.getItem(ESSENTIAL_EXPENSES_STORAGE_KEY) || '{"Self":0,"Spouse":0}');
 
         let currentMemberFilter = 'combined';
+        let currentTransactionTypeFilter = 'all';
+        let currentTransactionMonthFilter = 'all';
 
         let allocationChartInstance = null;
         let memberChartInstance = null;
@@ -938,6 +1064,8 @@
             'transfer-out': ['Investment contribution', 'Transfer to savings', 'Other transfer out']
         };
         const LIABILITY_TYPES = ['Home loan', 'Personal loan', 'Vehicle loan', 'Education loan', 'Credit card', 'Other liability'];
+        const EMERGENCY_FUND_AVERAGE_MONTHS = 3;
+        const ESSENTIAL_EXPENSE_CATEGORIES = CASHFLOW_CATEGORIES.expense;
 
         // ---------- Asset classes (assigned automatically, nothing to configure) ----------
         const CLASSES = [
@@ -1062,11 +1190,56 @@
             notice.classList.toggle('hidden', !message);
         }
 
+        function setDrivePageLoader(visible, message = '') {
+            const loader = document.getElementById('drive-page-loader');
+            loader.classList.toggle('hidden', !visible);
+            loader.classList.toggle('flex', visible);
+            loader.setAttribute('aria-hidden', String(!visible));
+            if (message) document.getElementById('drive-page-loader-message').textContent = message;
+        }
+
         function toggleSection(button) {
             const panel = document.getElementById(button.getAttribute('aria-controls'));
             const expanded = button.getAttribute('aria-expanded') === 'true';
             button.setAttribute('aria-expanded', String(!expanded));
             panel.classList.toggle('hidden', expanded);
+        }
+
+        function openLiabilityModal() {
+            resetLiabilityForm();
+            showLiabilityModal();
+            document.getElementById('liability-name').focus();
+        }
+
+        function showLiabilityModal() {
+            const modal = document.getElementById('liability-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            const name = document.getElementById('liability-name').value.trim();
+            document.getElementById('liability-modal-title').textContent =
+                document.getElementById('liability-edit-id').value ? `Edit ${name}` : 'Add liability';
+        }
+
+        function closeLiabilityModal() {
+            resetLiabilityForm();
+        }
+
+        function resetLiabilityForm() {
+            document.getElementById('liability-form').reset();
+            document.getElementById('liability-edit-id').value = '';
+            document.getElementById('liability-date').value = todayLocalISO();
+            document.getElementById('liability-member').value = currentMemberFilter === 'spouse' ? 'Spouse' : 'Self';
+            document.getElementById('liability-rate').value = '';
+            document.getElementById('liability-tenure').value = '';
+            document.getElementById('liability-emi').value = '';
+            document.getElementById('liability-submit').innerText = 'Add liability';
+            document.getElementById('liability-modal-title').textContent = 'Add liability';
+            document.getElementById('liability-cancel-edit').classList.add('hidden');
+            document.getElementById('liability-type').value = LIABILITY_TYPES[0];
+            updateLiabilityTermRequirements(LIABILITY_TYPES[0]);
+            const modal = document.getElementById('liability-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         function showDashboard() {
@@ -1122,7 +1295,7 @@
             setLoginButtonState(false, 'Sign in with Google');
         }
 
-        function handleAuth(callback) {
+        function handleAuth(callback, loaderMessage = 'Working with Google Drive…') {
             if (!CLIENT_ID || CLIENT_ID.includes('YOUR_CLIENT_ID')) {
                 const message = 'Google sign-in is not configured. Please set a valid OAuth client ID.';
                 if (appAuthenticated) alert(message);
@@ -1138,6 +1311,7 @@
             if (!tokenClient) gisLoaded();
 
             const runCallback = async () => {
+                setDrivePageLoader(true, loaderMessage);
                 try {
                     await callback();
                 } catch (error) {
@@ -1148,6 +1322,8 @@
                     } else {
                         alert(`Google Drive request failed: ${error.message}`);
                     }
+                } finally {
+                    setDrivePageLoader(false);
                 }
             };
             if (driveAccessToken && driveTokenExpiresAt > Date.now() + 60000) {
@@ -1258,7 +1434,7 @@
                 const validRecurringTransactions = Array.isArray(driveRecurringTransactions) &&
                     driveRecurringTransactions.every(item =>
                         item && typeof item.id === 'string' &&
-                        ['income', 'expense', 'emi'].includes(item.type) &&
+                        ['income', 'expense', 'emi', 'transfer-in', 'transfer-out'].includes(item.type) &&
                         CASHFLOW_CATEGORIES[item.type].includes(item.category) &&
                         Number.isFinite(Number(item.amount)) && Number(item.amount) > 0 &&
                         isValidISODate(item.nextDueDate) &&
@@ -1304,23 +1480,16 @@
                 portfolio = fileData.portfolio;
                 cashflowTransactions = fileData.transactions;
                 cashOpeningBalances = { Self: selfOpening, Spouse: spouseOpening };
-                if ((fileData.cashOpeningDates !== undefined &&
-                    (!fileData.cashOpeningDates || typeof fileData.cashOpeningDates !== 'object' || Array.isArray(fileData.cashOpeningDates))) ||
-                    (fileData.monthlyEssentialExpenses !== undefined &&
-                    (!fileData.monthlyEssentialExpenses || typeof fileData.monthlyEssentialExpenses !== 'object' || Array.isArray(fileData.monthlyEssentialExpenses)))) {
-                    throw new Error('portfolio.json contains invalid planning dates or expenses.');
+                if (fileData.cashOpeningDates !== undefined &&
+                    (!fileData.cashOpeningDates || typeof fileData.cashOpeningDates !== 'object' || Array.isArray(fileData.cashOpeningDates))) {
+                    throw new Error('portfolio.json contains invalid planning dates.');
                 }
                 cashOpeningDates = {
                     Self: fileData.cashOpeningDates?.Self || '',
                     Spouse: fileData.cashOpeningDates?.Spouse || ''
                 };
-                monthlyEssentialExpenses = {
-                    Self: Number(fileData.monthlyEssentialExpenses?.Self || 0),
-                    Spouse: Number(fileData.monthlyEssentialExpenses?.Spouse || 0)
-                };
-                if (!['Self', 'Spouse'].every(member => cashOpeningDates[member] === '' || /^\d{4}-\d{2}-\d{2}$/.test(cashOpeningDates[member])) ||
-                    !['Self', 'Spouse'].every(member => Number.isFinite(monthlyEssentialExpenses[member]) && monthlyEssentialExpenses[member] >= 0)) {
-                    throw new Error('portfolio.json contains invalid planning dates or expenses.');
+                if (!['Self', 'Spouse'].every(member => cashOpeningDates[member] === '' || /^\d{4}-\d{2}-\d{2}$/.test(cashOpeningDates[member]))) {
+                    throw new Error('portfolio.json contains invalid planning dates.');
                 }
                 includeCashBalance = fileData.includeCashBalance === true;
                 liabilities = fileData.liabilities || [];
@@ -1339,11 +1508,11 @@
             handleAuth(async () => {
                 await loadPortfolioFromDrive(false);
                 showDashboard();
-            });
+            }, 'Loading your portfolio from Google Drive…');
         }
 
         function loadFromDrive() {
-            handleAuth(loadPortfolioFromDrive);
+            handleAuth(loadPortfolioFromDrive, 'Loading your portfolio from Google Drive…');
         }
 
         async function saveToDrive() {
@@ -1357,8 +1526,7 @@
                     cashOpeningDates,
                     includeCashBalance,
                     liabilities,
-                    goals: financialGoals,
-                    monthlyEssentialExpenses
+                    goals: financialGoals
                 }, null, 2);
                 const existingFile = targetFileId ? null : await findPortfolioFile();
                 targetFileId = targetFileId || (existingFile && existingFile.id);
@@ -1387,7 +1555,7 @@
                     targetFileId = result.id;
                     alert('Portfolio file created and saved to Google Drive!');
                 }
-            });
+            }, 'Saving your portfolio to Google Drive…');
         }
         // ---------- State ----------
         function setMember(member) {
@@ -1463,6 +1631,32 @@
             const netFlow = totals.income - totals.expenses - totals.principalRepayments;
             const balance = openingBalance + netFlow + totals.transfersIn - totals.transfersOut;
             return { ...totals, openingBalance, netFlow, balance };
+        }
+
+        function emergencyFundExpenseAverage(memberFilter = currentMemberFilter, asOfDate = todayLocalISO()) {
+            const [year, month] = asOfDate.split('-').map(Number);
+            const firstMonth = new Date(Date.UTC(
+                year,
+                month - 1 - (EMERGENCY_FUND_AVERAGE_MONTHS - 1),
+                1
+            ));
+            const startMonth = `${firstMonth.getUTCFullYear()}-${String(firstMonth.getUTCMonth() + 1).padStart(2, '0')}`;
+            const endMonth = asOfDate.slice(0, 7);
+            const entries = cashflowTransactions.filter(item =>
+                (memberFilter === 'combined' || item.member.toLowerCase() === memberFilter) &&
+                item.date <= asOfDate &&
+                item.date.slice(0, 7) >= startMonth &&
+                item.date.slice(0, 7) <= endMonth &&
+                (item.type === 'emi' || (item.type === 'expense' && ESSENTIAL_EXPENSE_CATEGORIES.includes(item.category)))
+            );
+            const total = entries.reduce((sum, item) => sum + Number(item.amount), 0);
+            return {
+                total,
+                monthlyAverage: total / EMERGENCY_FUND_AVERAGE_MONTHS,
+                transactionCount: entries.length,
+                startMonth,
+                endMonth
+            };
         }
 
         function todayLocalISO() {
@@ -1544,6 +1738,23 @@
             return Math.max(0, Number(liability.remainingTenureMonths || 0) - monthsPaid);
         }
 
+        function liabilityProjectedClosureDate(liability, asOfDate = todayLocalISO()) {
+            if (!isAmortizingLoanType(liability.type) || !Number.isInteger(Number(liability.remainingTenureMonths))) return '—';
+            const balance = liabilityBalanceAsOf(liability, asOfDate);
+            if (!Number.isFinite(balance)) return '—';
+            if (balance <= 0) return 'Paid off';
+
+            const months = liabilityRemainingTenure(liability, asOfDate);
+            if (months <= 0) return 'Not estimated';
+            const closureDate = new Date(`${asOfDate}T00:00:00`);
+            const day = closureDate.getDate();
+            closureDate.setDate(1);
+            closureDate.setMonth(closureDate.getMonth() + months);
+            const lastDayOfMonth = new Date(closureDate.getFullYear(), closureDate.getMonth() + 1, 0).getDate();
+            closureDate.setDate(Math.min(day, lastDayOfMonth));
+            return `${closureDate.getFullYear()}-${String(closureDate.getMonth() + 1).padStart(2, '0')}-${String(closureDate.getDate()).padStart(2, '0')}`;
+        }
+
         function periodMatches(date, periodType, value) {
             return periodType === 'year' ? date.slice(0, 4) === value : date.slice(0, 7) === value;
         }
@@ -1584,7 +1795,8 @@
             const recurringEditId = document.getElementById('cashflow-recurring-edit-id').value;
             const recurringOption = document.getElementById('cashflow-recurring-option');
             const recurringCheckbox = document.getElementById('cashflow-recurring');
-            const canRecur = ['income', 'expense', 'emi'].includes(type) && (!document.getElementById('cashflow-edit-id').value || recurringEditId);
+            const canRecur = ['income', 'expense', 'emi', 'transfer-in', 'transfer-out'].includes(type) &&
+                (!document.getElementById('cashflow-edit-id').value || recurringEditId);
             recurringOption.classList.toggle('hidden', !canRecur);
             recurringOption.classList.toggle('flex', canRecur);
             if (!canRecur && !recurringEditId) recurringCheckbox.checked = false;
@@ -1676,7 +1888,39 @@
             document.getElementById('cashflow-member').value = currentMemberFilter === 'spouse' ? 'Spouse' : 'Self';
             document.getElementById('cashflow-cancel-edit').classList.add('hidden');
             document.getElementById('cashflow-submit').innerText = 'Add transaction';
+            document.getElementById('cashflow-modal-title').textContent = 'Add transaction';
+            const modal = document.getElementById('cashflow-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
             updateCashflowCategories();
+        }
+
+        function openCashflowModal(makeRecurring = false) {
+            resetCashflowForm();
+            if (makeRecurring) {
+                document.getElementById('cashflow-recurring').checked = true;
+                updateCashflowCategories();
+            }
+            const modal = document.getElementById('cashflow-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('cashflow-modal-title').textContent =
+                makeRecurring ? 'Add recurring transaction' : 'Add transaction';
+            document.getElementById('cashflow-type').focus();
+        }
+
+        function showCashflowModal() {
+            const modal = document.getElementById('cashflow-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('cashflow-modal-title').textContent =
+                document.getElementById('cashflow-recurring-edit-id').value
+                    ? 'Edit recurring transaction'
+                    : document.getElementById('cashflow-edit-id').value
+                        ? 'Edit transaction'
+                        : document.getElementById('cashflow-recurring').checked
+                            ? 'Add recurring transaction'
+                            : 'Add transaction';
         }
 
         function isValidISODate(value) {
@@ -1719,31 +1963,6 @@
             }
             cashOpeningDates[member] = value;
             saveAndRefresh();
-        }
-
-        function setEssentialExpenses(member, rawValue) {
-            const value = Number(rawValue);
-            if (!Number.isFinite(value) || value < 0) {
-                alert('Enter a valid monthly essential-expense amount.');
-                renderCashflowDashboard();
-                return;
-            }
-            monthlyEssentialExpenses[member] = value;
-            saveAndRefresh();
-        }
-
-        function resetLiabilityForm() {
-            document.getElementById('liability-form').reset();
-            document.getElementById('liability-edit-id').value = '';
-            document.getElementById('liability-date').value = todayLocalISO();
-            document.getElementById('liability-member').value = currentMemberFilter === 'spouse' ? 'Spouse' : 'Self';
-            document.getElementById('liability-rate').value = '';
-            document.getElementById('liability-tenure').value = '';
-            document.getElementById('liability-emi').value = '';
-            document.getElementById('liability-submit').innerText = 'Add liability';
-            document.getElementById('liability-cancel-edit').classList.add('hidden');
-            document.getElementById('liability-type').value = LIABILITY_TYPES[0];
-            updateLiabilityTermRequirements(LIABILITY_TYPES[0]);
         }
 
         function updateLiabilityTermRequirements(type) {
@@ -1863,6 +2082,7 @@
             document.getElementById('liability-emi').value = item.monthlyEmi ?? '';
             document.getElementById('liability-submit').innerText = 'Save changes';
             document.getElementById('liability-cancel-edit').classList.remove('hidden');
+            showLiabilityModal();
             document.getElementById('liability-name').focus();
         }
 
@@ -1892,7 +2112,7 @@
             const tbody = document.getElementById('liability-table-body');
             tbody.replaceChildren();
             if (!memberLiabilities.length) {
-                tbody.innerHTML = '<tr data-empty><td colspan="6" class="py-5 text-center text-slate-400">No liabilities recorded for this view.</td></tr>';
+                tbody.innerHTML = '<tr data-empty><td colspan="7" class="py-5 text-center text-slate-400">No liabilities recorded for this view.</td></tr>';
                 return;
             }
             memberLiabilities.forEach(item => {
@@ -1906,9 +2126,10 @@
                 const remainingTerm = isAmortizingLoanType(item.type) && item.remainingTenureMonths
                     ? remainingMonths > 0 ? `${remainingMonths} months` : 'Paid off'
                     : '—';
+                const projectedClosure = liabilityProjectedClosureDate(item);
                 [['Liability', `${item.name} — ${item.type}${loanDetails}`], ['Member', item.member],
                     ['Balance', fmt(liabilityBalanceAsOf(item))], ['Remaining term', remainingTerm],
-                    ['As of', liabilityBalanceDate(item)]].forEach(([label, text]) => {
+                    ['Projected closure', projectedClosure], ['As of', liabilityBalanceDate(item)]].forEach(([label, text]) => {
                     const cell = document.createElement('td');
                     cell.dataset.label = label;
                     cell.className = 'p-3 text-slate-700';
@@ -1918,19 +2139,22 @@
                 const actions = document.createElement('td');
                 actions.dataset.label = 'Actions';
                 actions.className = 'p-3 text-center';
+                const actionGroup = document.createElement('div');
+                actionGroup.className = 'record-action-group';
                 const edit = document.createElement('button');
                 edit.type = 'button';
-                edit.className = 'min-h-[44px] min-w-[44px] text-indigo-600';
+                edit.className = 'record-action-button record-action-edit';
                 edit.setAttribute('aria-label', `Edit ${item.name}`);
                 edit.innerHTML = '<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>';
                 edit.onclick = () => editLiability(item.id);
                 const remove = document.createElement('button');
                 remove.type = 'button';
-                remove.className = 'min-h-[44px] min-w-[44px] text-rose-600';
+                remove.className = 'record-action-button record-action-delete';
                 remove.setAttribute('aria-label', `Delete ${item.name}`);
                 remove.innerHTML = '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>';
                 remove.onclick = () => deleteLiability(item.id);
-                actions.append(edit, remove);
+                actionGroup.append(edit, remove);
+                actions.appendChild(actionGroup);
                 row.appendChild(actions);
                 tbody.appendChild(row);
             });
@@ -1943,7 +2167,19 @@
             document.getElementById('goal-date').value = todayLocalISO();
             document.getElementById('goal-member').value = currentMemberFilter === 'spouse' ? 'Spouse' : 'Self';
             document.getElementById('goal-submit').innerText = 'Add goal';
+            document.getElementById('goal-modal-title').textContent = 'Add goal';
             document.getElementById('goal-cancel-edit').classList.add('hidden');
+            const modal = document.getElementById('goal-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function openGoalModal() {
+            resetGoalForm();
+            const modal = document.getElementById('goal-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('goal-name').focus();
         }
 
         function handleGoalSubmit(event) {
@@ -1984,7 +2220,11 @@
             document.getElementById('goal-saved').value = goal.saved;
             document.getElementById('goal-date').value = goal.date;
             document.getElementById('goal-submit').innerText = 'Save changes';
+            document.getElementById('goal-modal-title').textContent = `Edit ${goal.name}`;
             document.getElementById('goal-cancel-edit').classList.remove('hidden');
+            const modal = document.getElementById('goal-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
             document.getElementById('goal-name').focus();
         }
 
@@ -2025,16 +2265,16 @@
                 meta.textContent = `${goal.member} · Target ${goal.date}`;
                 title.append(name, meta);
                 const actions = document.createElement('div');
-                actions.className = 'flex gap-1';
+                actions.className = 'record-action-group';
                 const edit = document.createElement('button');
                 edit.type = 'button';
-                edit.className = 'min-h-[44px] min-w-[44px] text-indigo-600';
+                edit.className = 'record-action-button record-action-edit';
                 edit.setAttribute('aria-label', `Edit ${goal.name}`);
                 edit.innerHTML = '<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>';
                 edit.onclick = () => editGoal(goal.id);
                 const remove = document.createElement('button');
                 remove.type = 'button';
-                remove.className = 'min-h-[44px] min-w-[44px] text-rose-600';
+                remove.className = 'record-action-button record-action-delete';
                 remove.setAttribute('aria-label', `Delete ${goal.name}`);
                 remove.innerHTML = '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>';
                 remove.onclick = () => deleteGoal(goal.id);
@@ -2091,8 +2331,8 @@
             }
             const recurringEditId = document.getElementById('cashflow-recurring-edit-id').value;
             if (recurringEditId || document.getElementById('cashflow-recurring').checked) {
-                if (!['income', 'expense', 'emi'].includes(type) || !isValidISODate(date)) {
-                    alert('Recurring schedules require a valid date and an income, expense, or loan EMI.');
+                if (!['income', 'expense', 'emi', 'transfer-in', 'transfer-out'].includes(type) || !isValidISODate(date)) {
+                    alert('Recurring schedules require a valid date and transaction type.');
                     return;
                 }
                 const existingSchedule = recurringEditId
@@ -2228,6 +2468,7 @@
             document.getElementById('cashflow-cancel-edit').classList.remove('hidden');
             document.getElementById('cashflow-submit').innerText = 'Save changes';
             updateEmiPreview();
+            showCashflowModal();
             document.getElementById('cashflow-type').focus();
         }
 
@@ -2248,6 +2489,7 @@
             document.getElementById('cashflow-description').value = schedule.description;
             document.getElementById('cashflow-cancel-edit').classList.remove('hidden');
             document.getElementById('cashflow-submit').innerText = 'Save recurring schedule';
+            showCashflowModal();
             document.getElementById('cashflow-type').focus();
         }
 
@@ -2375,8 +2617,6 @@
             document.getElementById('opening-balance-spouse').value = Number(cashOpeningBalances.Spouse || 0);
             document.getElementById('opening-date-self').value = cashOpeningDates.Self || '';
             document.getElementById('opening-date-spouse').value = cashOpeningDates.Spouse || '';
-            document.getElementById('essential-expenses-self').value = Number(monthlyEssentialExpenses.Self || 0);
-            document.getElementById('essential-expenses-spouse').value = Number(monthlyEssentialExpenses.Spouse || 0);
             renderRecurringTransactions();
 
             const summary = cashflowSummary();
@@ -2454,45 +2694,191 @@
             const liquidAssets = filteredAssets.reduce((total, item) =>
                 total + (classOf(item) === 'Cash' ? calc(item).cur : 0), 0);
             const liquidCash = liquidAssets + summary.balance;
-            const monthlyEssentials = currentMemberFilter === 'combined'
-                ? Number(monthlyEssentialExpenses.Self || 0) + Number(monthlyEssentialExpenses.Spouse || 0)
-                : Number(monthlyEssentialExpenses[currentMemberFilter === 'self' ? 'Self' : 'Spouse'] || 0);
+            const emergencyExpenseAverage = emergencyFundExpenseAverage();
+            const monthlyEssentials = emergencyExpenseAverage.monthlyAverage;
             const emergencyTarget = monthlyEssentials * 6;
             const emergencyMonths = monthlyEssentials > 0 ? liquidCash / monthlyEssentials : null;
-            document.getElementById('emergency-fund-summary').textContent = monthlyEssentials > 0
-                ? `${fmt(liquidCash)} liquid cash of a ${fmt(emergencyTarget)} six-month reference (${Math.max(0, emergencyMonths).toFixed(1)} months). Cash-flow balance is counted here; avoid duplicating it in asset records.`
-                : 'Enter monthly essential expenses above to estimate months of liquid-cash coverage.';
+            document.getElementById('emergency-fund-average').textContent =
+                `Average monthly outflow: ${fmt(monthlyEssentials)} (${emergencyExpenseAverage.startMonth} to ${emergencyExpenseAverage.endMonth}; ${emergencyExpenseAverage.transactionCount} transactions).`;
+            const emergencyStatus = document.getElementById('emergency-fund-status');
+            if (emergencyExpenseAverage.transactionCount === 0 || emergencyMonths === null) {
+                emergencyStatus.textContent = 'Not enough data';
+                emergencyStatus.className = 'inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700';
+            } else if (emergencyMonths < 3) {
+                emergencyStatus.textContent = 'Needs attention';
+                emergencyStatus.className = 'inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-800';
+            } else if (emergencyMonths < 6) {
+                emergencyStatus.textContent = 'Building reserve';
+                emergencyStatus.className = 'inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800';
+            } else {
+                emergencyStatus.textContent = 'On track';
+                emergencyStatus.className = 'inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800';
+            }
+            document.getElementById('emergency-fund-summary').textContent = emergencyExpenseAverage.transactionCount > 0
+                ? `Six-month target: ${fmt(emergencyTarget)}. Liquid cash: ${fmt(liquidCash)}${
+                    emergencyMonths === null ? '.' : ` (${Math.max(0, emergencyMonths).toFixed(1)} months covered).`
+                } Cash balance is included here; avoid duplicating it in asset records.`
+                : 'No expense or paid EMI transactions were found in this 3-month window, so an emergency-fund target cannot be estimated yet.';
 
+            renderTransactionCards();
+        }
+
+        function cashflowTransactionGroup(transaction) {
+            if (transaction.type === 'income') return 'income';
+            if (transaction.type === 'expense') return 'expenses';
+            if (transaction.type === 'emi') return 'emi';
+            if (transaction.type === 'transfer-out' && transaction.category === 'Investment contribution') return 'investments';
+            return 'transfers';
+        }
+
+        function setTransactionTypeFilter(group) {
+            const allowedGroups = ['all', 'income', 'expenses', 'emi', 'investments', 'transfers'];
+            if (!allowedGroups.includes(group)) {
+                throw new Error(`Unknown transaction type filter: ${group}`);
+            }
+            currentTransactionTypeFilter = group;
+            renderTransactionCards();
+        }
+
+        function setTransactionMonthFilter(month) {
+            if (month !== 'all' && !/^\d{4}-\d{2}$/.test(month)) {
+                throw new Error(`Invalid transaction month filter: ${month}`);
+            }
+            currentTransactionMonthFilter = month;
+            renderTransactionCards();
+        }
+
+        function renderTransactionCards() {
+            const typeCards = document.getElementById('transaction-type-cards');
             const tbody = document.getElementById('cashflow-table-body');
-            tbody.innerHTML = '';
-            const entries = (currentMemberFilter === 'combined'
+            const mobileCards = document.getElementById('transaction-mobile-cards');
+            const memberEntries = (currentMemberFilter === 'combined'
                 ? cashflowTransactions
                 : cashflowTransactions.filter(item => item.member.toLowerCase() === currentMemberFilter))
-                .slice()
+                .slice();
+            const monthSelect = document.getElementById('transaction-month-filter');
+            const previousMonthFilter = currentTransactionMonthFilter;
+            const availableMonths = [...new Set(memberEntries.map(item => item.date.slice(0, 7)))]
+                .filter(month => /^\d{4}-\d{2}$/.test(month))
+                .sort((a, b) => b.localeCompare(a));
+            monthSelect.replaceChildren(new Option('All months', 'all'));
+            availableMonths.forEach(month => {
+                const monthDate = new Date(`${month}-01T00:00:00`);
+                const label = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(monthDate);
+                monthSelect.add(new Option(label, month));
+            });
+            currentTransactionMonthFilter = previousMonthFilter === 'all' || availableMonths.includes(previousMonthFilter)
+                ? previousMonthFilter
+                : 'all';
+            monthSelect.value = currentTransactionMonthFilter;
+            const entries = memberEntries
+                .filter(item => currentTransactionMonthFilter === 'all' || item.date.slice(0, 7) === currentTransactionMonthFilter)
                 .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
-            if (!entries.length) {
-                tbody.innerHTML = '<tr data-empty><td colspan="6" class="py-6 text-center text-slate-400">No transactions recorded for this view.</td></tr>';
+            const groups = [
+                { id: 'all', label: 'All transactions', icon: 'fa-list', color: 'indigo' },
+                { id: 'income', label: 'Income', icon: 'fa-arrow-trend-up', color: 'emerald' },
+                { id: 'expenses', label: 'Expenses', icon: 'fa-arrow-trend-down', color: 'rose' },
+                { id: 'emi', label: 'Loan EMIs', icon: 'fa-building-columns', color: 'amber' },
+                { id: 'investments', label: 'Investments', icon: 'fa-chart-line', color: 'violet' },
+                { id: 'transfers', label: 'Transfers', icon: 'fa-repeat', color: 'sky' }
+            ];
+            const themes = {
+                indigo: { selected: 'border-indigo-400 bg-indigo-50', heading: 'text-indigo-800' },
+                emerald: { selected: 'border-emerald-400 bg-emerald-50', heading: 'text-emerald-800' },
+                rose: { selected: 'border-rose-400 bg-rose-50', heading: 'text-rose-800' },
+                amber: { selected: 'border-amber-400 bg-amber-50', heading: 'text-amber-800' },
+                violet: { selected: 'border-violet-400 bg-violet-50', heading: 'text-violet-800' },
+                sky: { selected: 'border-sky-400 bg-sky-50', heading: 'text-sky-800' }
+            };
+            typeCards.replaceChildren();
+            groups.forEach(group => {
+                const groupEntries = group.id === 'all'
+                    ? entries
+                    : entries.filter(item => cashflowTransactionGroup(item) === group.id);
+                const total = groupEntries.reduce((sum, item) => sum + Number(item.amount), 0);
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.setAttribute('aria-pressed', String(currentTransactionTypeFilter === group.id));
+                button.className = `rounded-xl border p-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+                    currentTransactionTypeFilter === group.id
+                        ? `${themes[group.color].selected} shadow-sm`
+                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                }`;
+                const heading = document.createElement('span');
+                heading.className = `flex items-center gap-2 text-xs font-semibold ${
+                    currentTransactionTypeFilter === group.id ? themes[group.color].heading : 'text-slate-600'
+                }`;
+                const icon = document.createElement('i');
+                icon.className = `fa-solid ${group.icon}`;
+                icon.setAttribute('aria-hidden', 'true');
+                const label = document.createElement('span');
+                label.textContent = group.label;
+                heading.append(icon, label);
+                const amount = document.createElement('span');
+                amount.className = 'mt-2 block truncate text-sm font-bold text-slate-900';
+                amount.textContent = fmt(total);
+                const count = document.createElement('span');
+                count.className = 'mt-0.5 block text-[11px] text-slate-500';
+                count.textContent = `${groupEntries.length} ${groupEntries.length === 1 ? 'transaction' : 'transactions'}`;
+                button.append(heading, amount, count);
+                button.onclick = () => setTransactionTypeFilter(group.id);
+                typeCards.appendChild(button);
+            });
+
+            const visibleEntries = currentTransactionTypeFilter === 'all'
+                ? entries
+                : entries.filter(item => cashflowTransactionGroup(item) === currentTransactionTypeFilter);
+            tbody.replaceChildren();
+            mobileCards.replaceChildren();
+            if (!visibleEntries.length) {
+                const row = document.createElement('tr');
+                row.dataset.empty = '';
+                const cell = document.createElement('td');
+                cell.colSpan = 6;
+                cell.className = 'py-6 text-center text-slate-400';
+                cell.textContent = entries.length
+                    ? 'No transactions of this type for this view.'
+                    : 'No transactions recorded for this view.';
+                row.appendChild(cell);
+                tbody.appendChild(row);
+                const emptyMessage = document.createElement('p');
+                emptyMessage.className = 'py-3 text-center text-sm text-slate-400';
+                emptyMessage.textContent = cell.textContent;
+                mobileCards.appendChild(emptyMessage);
                 return;
             }
-
-            entries.forEach(item => {
-                const row = document.createElement('tr');
-                row.className = 'border-b border-slate-100 transition hover:bg-slate-50';
-                const typeLabels = { income: 'Income', expense: 'Expense', emi: 'Loan EMI', 'transfer-in': 'Transfer in', 'transfer-out': 'Transfer out' };
-                const positive = item.type === 'income' || item.type === 'transfer-in';
+            const typeLabels = {
+                income: 'Income',
+                expense: 'Expense',
+                emi: 'Loan EMI',
+                'transfer-in': 'Transfer in',
+                'transfer-out': 'Transfer out'
+            };
+            visibleEntries.forEach(item => {
+                const group = cashflowTransactionGroup(item);
+                const isPositive = item.type === 'income' || item.type === 'transfer-in';
                 const liability = item.type === 'emi' ? liabilities.find(record => record.id === item.liabilityId) : null;
                 const emiBreakdown = item.type === 'emi' ? emiBreakdownForTransaction(item) : null;
+                if (item.type === 'emi' && !emiBreakdown) {
+                    throw new Error(`Could not calculate the loan interest for transaction ${item.id}.`);
+                }
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-100 transition hover:bg-slate-50';
+                const typeColor = item.type === 'income'
+                    ? 'text-emerald-700'
+                    : ['expense', 'emi'].includes(item.type)
+                        ? 'text-rose-600'
+                        : group === 'investments' ? 'text-violet-700' : 'text-slate-600';
                 const transactionDetails = item.type === 'emi'
-                    ? `${liability?.name || 'Loan'} — principal ${fmt(emiBreakdown?.principalAmount || 0)}, interest ${fmt(emiBreakdown?.interestAmount || 0)}`
+                    ? `${liability?.name || 'Loan'} — principal ${fmt(emiBreakdown.principalAmount)}, interest ${fmt(emiBreakdown.interestAmount)}`
                     : item.description ? `${item.category} — ${item.description}` : item.category;
-                const values = [
+                [
                     ['Date', item.date, 'p-3 text-slate-600'],
-                    ['Type', typeLabels[item.type] || item.type, `p-3 font-semibold ${item.type === 'income' ? 'text-emerald-700' : ['expense', 'emi'].includes(item.type) ? 'text-rose-600' : 'text-slate-600'}`],
+                    ['Type', typeLabels[item.type] || item.type, `p-3 font-semibold ${typeColor}`],
                     ['Category / Payment details', transactionDetails, 'p-3 font-medium text-slate-800'],
                     ['Member', item.member, 'p-3 text-slate-600'],
-                    ['Amount', `${positive ? '+' : '−'}${fmt(item.amount)}`, `p-3 text-right font-mono font-semibold ${item.type === 'income' ? 'text-emerald-700' : ['expense', 'emi'].includes(item.type) ? 'text-rose-600' : 'text-slate-700'}`]
-                ];
-                values.forEach(([label, value, className]) => {
+                    ['Amount', `${isPositive ? '+' : '−'}${fmt(item.amount)}`, `p-3 text-right font-mono font-semibold ${item.type === 'income' ? 'text-emerald-700' : ['expense', 'emi'].includes(item.type) ? 'text-rose-600' : group === 'investments' ? 'text-violet-700' : 'text-slate-700'}`]
+                ].forEach(([label, value, className]) => {
                     const cell = document.createElement('td');
                     cell.dataset.label = label;
                     cell.className = className;
@@ -2503,23 +2889,76 @@
                 actions.dataset.label = 'Actions';
                 actions.className = 'p-3 text-center';
                 const actionGroup = document.createElement('div');
-                actionGroup.className = 'flex items-center justify-center gap-2';
+                actionGroup.className = 'record-action-group';
                 const editButton = document.createElement('button');
                 editButton.type = 'button';
-                editButton.className = 'min-h-[44px] min-w-[44px] rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-indigo-600';
-                editButton.setAttribute('aria-label', 'Edit transaction');
+                editButton.className = 'record-action-button record-action-edit';
+                editButton.setAttribute('aria-label', `Edit ${item.description || item.category}`);
                 editButton.innerHTML = '<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>';
                 editButton.onclick = () => editCashflowTransaction(item.id);
                 const deleteButton = document.createElement('button');
                 deleteButton.type = 'button';
-                deleteButton.className = 'min-h-[44px] min-w-[44px] rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600';
-                deleteButton.setAttribute('aria-label', 'Delete transaction');
+                deleteButton.className = 'record-action-button record-action-delete';
+                deleteButton.setAttribute('aria-label', `Delete ${item.description || item.category}`);
                 deleteButton.innerHTML = '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>';
                 deleteButton.onclick = () => deleteCashflowTransaction(item.id);
                 actionGroup.append(editButton, deleteButton);
                 actions.appendChild(actionGroup);
                 row.appendChild(actions);
                 tbody.appendChild(row);
+
+                const card = document.createElement('article');
+                card.className = 'rounded-xl border border-slate-200 bg-white p-4 shadow-sm';
+                const cardHeader = document.createElement('div');
+                cardHeader.className = 'flex items-start justify-between gap-3';
+                const cardDetails = document.createElement('div');
+                cardDetails.className = 'min-w-0';
+                const title = document.createElement('h4');
+                title.className = 'truncate font-semibold text-slate-800';
+                title.textContent = item.description || (item.type === 'emi' ? liability?.name || 'Loan EMI' : item.category);
+                const meta = document.createElement('p');
+                meta.className = 'mt-1 text-xs text-slate-500';
+                meta.textContent = `${item.date} · ${item.member}`;
+                cardDetails.append(title, meta);
+                const amount = document.createElement('span');
+                amount.className = `shrink-0 font-mono text-sm font-bold ${isPositive ? 'text-emerald-700' : ['expense', 'emi'].includes(item.type) ? 'text-rose-700' : group === 'investments' ? 'text-violet-700' : 'text-slate-700'}`;
+                amount.textContent = `${isPositive ? '+' : '−'}${fmt(item.amount)}`;
+                cardHeader.append(cardDetails, amount);
+                const category = document.createElement('p');
+                category.className = 'mt-2 text-xs text-slate-600';
+                category.textContent = item.type === 'emi'
+                    ? `${liability?.name || 'Loan'} · principal ${fmt(emiBreakdown.principalAmount)} · interest ${fmt(emiBreakdown.interestAmount)}`
+                    : item.category;
+                const cardFooter = document.createElement('div');
+                cardFooter.className = 'mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-2';
+                const badgeClasses = {
+                    income: 'bg-emerald-100 text-emerald-800',
+                    expenses: 'bg-rose-100 text-rose-800',
+                    emi: 'bg-amber-100 text-amber-800',
+                    investments: 'bg-violet-100 text-violet-800',
+                    transfers: 'bg-sky-100 text-sky-800'
+                }[group];
+                const badge = document.createElement('span');
+                badge.className = `inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${badgeClasses}`;
+                badge.textContent = typeLabels[item.type] || item.type;
+                const cardActions = document.createElement('div');
+                cardActions.className = 'record-action-group';
+                const cardEdit = document.createElement('button');
+                cardEdit.type = 'button';
+                cardEdit.className = 'record-action-button record-action-edit';
+                cardEdit.setAttribute('aria-label', `Edit ${item.description || item.category}`);
+                cardEdit.innerHTML = '<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>';
+                cardEdit.onclick = () => editCashflowTransaction(item.id);
+                const cardDelete = document.createElement('button');
+                cardDelete.type = 'button';
+                cardDelete.className = 'record-action-button record-action-delete';
+                cardDelete.setAttribute('aria-label', `Delete ${item.description || item.category}`);
+                cardDelete.innerHTML = '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>';
+                cardDelete.onclick = () => deleteCashflowTransaction(item.id);
+                cardActions.append(cardEdit, cardDelete);
+                cardFooter.append(badge, cardActions);
+                card.append(cardHeader, category, cardFooter);
+                mobileCards.appendChild(card);
             });
         }
 
@@ -2552,7 +2991,13 @@
                 title.textContent = schedule.description || liability?.name || schedule.category;
                 const metadata = document.createElement('p');
                 metadata.className = 'mt-1 text-xs text-slate-500';
-                const typeLabel = schedule.type === 'emi' ? 'Loan EMI' : schedule.type === 'income' ? 'Income' : 'Expense';
+                const typeLabel = {
+                    income: 'Income',
+                    expense: 'Expense',
+                    emi: 'Loan EMI',
+                    'transfer-in': 'Transfer in',
+                    'transfer-out': 'Transfer out'
+                }[schedule.type] || schedule.type;
                 metadata.textContent = `${typeLabel}${schedule.type === 'emi' && liability ? ` · ${liability.name}` : ` · ${schedule.category}`} · ${schedule.member}`;
                 const dueDate = document.createElement('p');
                 dueDate.className = 'mt-2 text-sm text-slate-600';
@@ -2561,7 +3006,7 @@
                 const paidButton = document.createElement('button');
                 paidButton.type = 'button';
                 paidButton.className = 'min-h-[44px] shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700';
-                paidButton.textContent = 'Mark paid';
+                paidButton.textContent = 'Record occurrence';
                 paidButton.onclick = () => markRecurringPaid(schedule.id);
                 header.append(details, paidButton);
                 const actions = document.createElement('div');
@@ -2591,7 +3036,6 @@
             localStorage.setItem(INCLUDE_CASH_STORAGE_KEY, String(includeCashBalance));
             localStorage.setItem(LIABILITIES_STORAGE_KEY, JSON.stringify(liabilities));
             localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(financialGoals));
-            localStorage.setItem(ESSENTIAL_EXPENSES_STORAGE_KEY, JSON.stringify(monthlyEssentialExpenses));
             renderDashboard();
             renderCashflowDashboard();
         }
@@ -2638,9 +3082,9 @@
                 const clsMeta = CLASSES.find(c => c.k === cls);
                 const clsBadge = `<span class="inline-block whitespace-nowrap px-2 py-0.5 text-xs font-semibold rounded-md text-white" style="background:${clsMeta.c}">${cls}</span>`;
                 const retCell = `<td data-label="Returns" class="p-3.5 text-right font-mono font-medium ${r.ret >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${fmt(r.ret)} (${r.retPct.toFixed(1)}%)</td>`;
-                const actions = `<td data-label="Actions" class="p-3.5 text-center"><div class="flex items-center justify-center space-x-1.5">
-                    <button onclick="editAsset('${item.id}')" title="Edit Asset" class="text-slate-400 hover:text-indigo-600 transition p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button onclick="deleteAsset('${item.id}')" title="Delete Asset" class="text-slate-400 hover:text-rose-600 transition p-1"><i class="fa-solid fa-trash-can"></i></button></div></td>`;
+                const actions = `<td data-label="Actions" class="p-3.5 text-center"><div class="record-action-group">
+                    <button type="button" onclick="editAsset('${item.id}')" title="Edit Asset" aria-label="Edit ${item.name}" class="record-action-button record-action-edit"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button>
+                    <button type="button" onclick="deleteAsset('${item.id}')" title="Delete Asset" aria-label="Delete ${item.name}" class="record-action-button record-action-delete"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></div></td>`;
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
