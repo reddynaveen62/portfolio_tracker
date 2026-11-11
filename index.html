@@ -572,7 +572,7 @@
             <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">Liabilities</h2>
-                    <p class="mt-1 text-xs text-slate-500">Outstanding balances are subtracted from net worth. Update them using the balance as of the date shown.</p>
+                    <p class="mt-1 text-xs text-slate-500">Outstanding balances are subtracted from net worth. For loans, enter the bank’s annual rate, remaining term, and regular EMI. Interest is estimated by monthly compounding; check statements because banks may use daily accrual or variable rates.</p>
                 </div>
             </div>
             <form id="liability-form" onsubmit="handleLiabilitySubmit(event)" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -581,7 +581,7 @@
                     <input id="liability-name" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Home loan">
                 </label>
                 <label class="text-xs font-semibold text-slate-700">Type
-                    <select id="liability-type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></select>
+                    <select id="liability-type" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="updateLiabilityTermRequirements(this.value)"></select>
                 </label>
                 <label class="text-xs font-semibold text-slate-700">Member
                     <select id="liability-member" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option>Self</option><option>Spouse</option></select>
@@ -592,6 +592,16 @@
                 <label class="text-xs font-semibold text-slate-700">Balance as of
                     <input id="liability-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
                 </label>
+                <label class="text-xs font-semibold text-slate-700">Annual interest rate (%)
+                    <input id="liability-rate" type="number" min="0" max="100" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 8.5">
+                </label>
+                <label class="text-xs font-semibold text-slate-700">Remaining tenure (months)
+                    <input id="liability-tenure" type="number" min="0" max="1200" step="1" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 180">
+                </label>
+                <label class="text-xs font-semibold text-slate-700">Regular monthly EMI (₹)
+                    <input id="liability-emi" type="number" min="0.01" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 25000">
+                </label>
+                <p class="text-xs text-slate-500 sm:col-span-2 lg:col-span-3">For home, personal, vehicle, and education loans, these bank details are needed to estimate the interest portion of each payment.</p>
                 <div class="flex items-end justify-end gap-2">
                     <button id="liability-cancel-edit" type="button" onclick="resetLiabilityForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel edit</button>
                     <button id="liability-submit" type="submit" class="min-h-[44px] rounded-lg bg-rose-700 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-rose-800">Add liability</button>
@@ -602,8 +612,8 @@
                 <span id="liability-total" class="font-bold text-rose-800">₹0</span>
             </div>
             <div id="liability-table-scroll" class="mt-3 overflow-x-auto">
-                <table class="w-full min-w-[640px] text-left text-sm">
-                    <thead><tr class="bg-slate-100 text-xs uppercase text-slate-600"><th class="p-3">Liability</th><th class="p-3">Member</th><th class="p-3 text-right">Balance</th><th class="p-3">As of</th><th class="p-3 text-center">Actions</th></tr></thead>
+                <table class="w-full min-w-[760px] text-left text-sm">
+                    <thead><tr class="bg-slate-100 text-xs uppercase text-slate-600"><th class="p-3">Liability</th><th class="p-3">Member</th><th class="p-3 text-right">Balance</th><th class="p-3">Remaining term</th><th class="p-3">As of</th><th class="p-3 text-center">Actions</th></tr></thead>
                     <tbody id="liability-table-body" class="divide-y divide-slate-100"></tbody>
                 </table>
             </div>
@@ -643,7 +653,7 @@
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <h3 class="font-bold text-slate-800">Cash-flow report</h3>
-                        <p class="mt-1 text-xs text-slate-500">Income, expenses, and savings for the selected period. Transfers are not treated as income or expenses.</p>
+                        <p class="mt-1 text-xs text-slate-500">Income, expenses, and savings for the selected period. EMI principal is shown separately from interest and regular expenses. If cash is excluded from net worth because it is already recorded as an asset, update that asset after each payment.</p>
                     </div>
                     <div class="grid grid-cols-2 gap-2 sm:min-w-[280px]">
                         <label class="text-xs font-semibold text-slate-700">Period
@@ -657,7 +667,7 @@
                         </label>
                     </div>
                 </div>
-                <div id="cashflow-tiles" class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6"></div>
+                <div id="cashflow-tiles" class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7"></div>
                 <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <div>
                         <h4 class="mb-2 text-sm font-semibold text-slate-700">Spending by category</h4>
@@ -683,10 +693,12 @@
                 <h3 class="text-base font-bold text-slate-800">Add a transaction</h3>
                 <form id="cashflow-form" onsubmit="handleCashflowSubmit(event)" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <input id="cashflow-edit-id" type="hidden" value="">
+                    <input id="cashflow-recurring-edit-id" type="hidden" value="">
                     <label class="text-xs font-semibold text-slate-700">Type
                         <select id="cashflow-type" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="updateCashflowCategories()">
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
+                            <option value="emi">Loan EMI paid</option>
                             <option value="transfer-in">Transfer in (from an asset)</option>
                             <option value="transfer-out">Transfer out (to an asset)</option>
                         </select>
@@ -695,13 +707,20 @@
                         <select id="cashflow-category" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></select>
                     </label>
                     <label class="text-xs font-semibold text-slate-700">Amount (₹)
-                        <input id="cashflow-amount" type="number" min="0.01" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0.00">
+                        <input id="cashflow-amount" type="number" min="0.01" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0.00" oninput="updateEmiPreview()">
                     </label>
-                    <label class="text-xs font-semibold text-slate-700">Date
-                        <input id="cashflow-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                    <div id="cashflow-emi-details" class="hidden grid-cols-1 gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 sm:col-span-2 sm:grid-cols-2 lg:col-span-3">
+                        <label class="text-xs font-semibold text-slate-700">Loan
+                            <select id="cashflow-liability" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="updateEmiAmountFromLoan()"></select>
+                        </label>
+                        <p id="cashflow-emi-preview" class="text-xs text-slate-600 sm:col-span-2">Select a loan and enter the amount paid to estimate its interest and principal portions.</p>
+                        <p class="text-xs text-slate-600 sm:col-span-2">Record an EMI only after it is paid. The full payment reduces cash; estimated interest is an expense and the rest reduces principal. Future payments are not scheduled.</p>
+                    </div>
+                    <label class="text-xs font-semibold text-slate-700"><span id="cashflow-date-label">Date</span>
+                        <input id="cashflow-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="updateEmiPreview()">
                     </label>
                     <label class="text-xs font-semibold text-slate-700">Member
-                        <select id="cashflow-member" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                        <select id="cashflow-member" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="updateCashflowCategories(document.getElementById('cashflow-category').value, document.getElementById('cashflow-liability').value)">
                             <option value="Self">Self</option>
                             <option value="Spouse">Spouse</option>
                         </select>
@@ -709,11 +728,22 @@
                     <label class="text-xs font-semibold text-slate-700">Description (optional)
                         <input id="cashflow-description" type="text" maxlength="120" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Monthly salary">
                     </label>
+                    <label id="cashflow-recurring-option" class="hidden min-h-[44px] items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-900">
+                        <input id="cashflow-recurring" type="checkbox" class="h-5 w-5 accent-indigo-600" onchange="updateCashflowCategories(document.getElementById('cashflow-category').value, document.getElementById('cashflow-liability').value)">
+                        Make this a monthly recurring transaction
+                    </label>
+                    <p id="cashflow-recurring-help" class="hidden text-xs text-slate-500 sm:col-span-2 lg:col-span-3">This creates a schedule only. Use “Mark paid” below to record each occurrence in your transactions and update cash and any linked loan balance.</p>
                     <div class="flex items-center justify-end gap-2 sm:col-span-2 lg:col-span-3">
                         <button id="cashflow-cancel-edit" type="button" onclick="resetCashflowForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel edit</button>
                         <button id="cashflow-submit" type="submit" class="min-h-[44px] rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700">Add transaction</button>
                     </div>
                 </form>
+            </section>
+
+            <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                <h3 class="text-base font-bold text-slate-800">Recurring transactions</h3>
+                <p class="mt-1 text-xs text-slate-500">Mark an item paid to record it in your transactions. Each payment records today’s date and moves the next due date forward by one month.</p>
+                <div id="recurring-transactions-list" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
             </section>
 
             <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -726,7 +756,7 @@
                             <tr class="bg-slate-100 text-xs uppercase tracking-wider text-slate-600">
                                 <th class="p-3 font-semibold">Date</th>
                                 <th class="p-3 font-semibold">Type</th>
-                                <th class="p-3 font-semibold">Category / Description</th>
+                                <th class="p-3 font-semibold">Category / Payment details</th>
                                 <th class="p-3 font-semibold">Member</th>
                                 <th class="p-3 font-semibold text-right">Amount</th>
                                 <th class="p-3 font-semibold text-center">Actions</th>
@@ -861,6 +891,7 @@
         const CLIENT_ID = '512606275516-nevi49mv6btshcgmo7841fi6l0hifupf.apps.googleusercontent.com';
         const REMEMBERED_SESSION_KEY = 'wealthpulse_remembered_session';
         const CASHFLOW_STORAGE_KEY = 'wealthpulse_income_expenses';
+        const RECURRING_STORAGE_KEY = 'wealthpulse_recurring_transactions';
         const CASH_OPENING_STORAGE_KEY = 'wealthpulse_cash_opening_balances';
         const CASH_OPENING_DATES_KEY = 'wealthpulse_cash_opening_dates';
         const INCLUDE_CASH_STORAGE_KEY = 'wealthpulse_include_cash_balance';
@@ -878,6 +909,7 @@
             { id: '7', name: 'Residential Plot - Gachibowli', member: 'Self', type: 'Real Estate - Land', units: 1, price: 4200000, currentNav: 4200000, sip: 0 }
         ];
         let cashflowTransactions = JSON.parse(localStorage.getItem(CASHFLOW_STORAGE_KEY) || '[]');
+        let recurringTransactions = JSON.parse(localStorage.getItem(RECURRING_STORAGE_KEY) || '[]');
         let cashOpeningBalances = JSON.parse(localStorage.getItem(CASH_OPENING_STORAGE_KEY) || '{"Self":0,"Spouse":0}');
         let cashOpeningDates = JSON.parse(localStorage.getItem(CASH_OPENING_DATES_KEY) || '{"Self":"","Spouse":""}');
         let includeCashBalance = localStorage.getItem(INCLUDE_CASH_STORAGE_KEY) === 'true';
@@ -901,6 +933,7 @@
         const CASHFLOW_CATEGORIES = {
             income: ['Salary', 'Business', 'Investment income', 'Rental income', 'Other income'],
             expense: ['Housing', 'Food', 'Transport', 'Utilities', 'Healthcare', 'Education', 'Shopping', 'Travel', 'Other expense'],
+            emi: ['Loan EMI'],
             'transfer-in': ['Transfer from savings', 'Asset sale proceeds', 'Other transfer in'],
             'transfer-out': ['Investment contribution', 'Transfer to savings', 'Other transfer out']
         };
@@ -1009,6 +1042,7 @@
             document.getElementById('report-period').value = todayLocalISO().slice(0, 7);
             document.getElementById('liability-type').innerHTML = LIABILITY_TYPES.map(type => `<option>${type}</option>`).join('');
             resetLiabilityForm();
+            updateLiabilityTermRequirements(document.getElementById('liability-type').value);
             resetGoalForm();
             if (localStorage.getItem(REMEMBERED_SESSION_KEY) === 'true') {
                 driveAuthorizationGranted = true;
@@ -1173,7 +1207,7 @@
             const fileData = await driveRequest(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(targetFileId)}?alt=media`);
             if (Array.isArray(fileData)) {
                 portfolio = fileData;
-            } else if (fileData && [2, 3].includes(fileData.version) && Array.isArray(fileData.portfolio) && Array.isArray(fileData.transactions)) {
+            } else if (fileData && [2, 3, 4, 5, 6].includes(fileData.version) && Array.isArray(fileData.portfolio) && Array.isArray(fileData.transactions)) {
                 if (fileData.cashOpeningBalances !== undefined &&
                     (!fileData.cashOpeningBalances || typeof fileData.cashOpeningBalances !== 'object' || Array.isArray(fileData.cashOpeningBalances))) {
                     throw new Error('portfolio.json contains invalid opening cash balances.');
@@ -1183,18 +1217,33 @@
                 const spouseOpening = Number(openingBalances.Spouse || 0);
                 const validTransactions = fileData.transactions.every(item =>
                     item && typeof item.id === 'string' &&
-                    ['income', 'expense', 'transfer-in', 'transfer-out'].includes(item.type) &&
+                    ['income', 'expense', 'emi', 'transfer-in', 'transfer-out'].includes(item.type) &&
                     typeof item.category === 'string' && item.category.length > 0 &&
                     Number.isFinite(Number(item.amount)) && Number(item.amount) > 0 &&
                     /^\d{4}-\d{2}-\d{2}$/.test(item.date) &&
                     (item.member === 'Self' || item.member === 'Spouse') &&
-                    typeof item.description === 'string'
+                    typeof item.description === 'string' &&
+                    (item.type !== 'emi' ||
+                        (typeof item.liabilityId === 'string' &&
+                            item.category === 'Loan EMI' &&
+                            item.date <= todayLocalISO() &&
+                            (item.interestAmount === undefined ||
+                                (Number.isFinite(Number(item.interestAmount)) &&
+                                    Number(item.interestAmount) >= 0 &&
+                                    Number(item.interestAmount) < Number(item.amount)))))
                 );
                 const validLiabilities = Array.isArray(fileData.liabilities || []) && (fileData.liabilities || []).every(item =>
                     item && typeof item.id === 'string' && typeof item.name === 'string' &&
                     LIABILITY_TYPES.includes(item.type) && ['Self', 'Spouse'].includes(item.member) &&
                     Number.isFinite(Number(item.balance)) && Number(item.balance) >= 0 &&
-                    /^\d{4}-\d{2}-\d{2}$/.test(item.date)
+                    /^\d{4}-\d{2}-\d{2}$/.test(item.date) &&
+                    (item.annualInterestRate === undefined ||
+                        (Number.isFinite(Number(item.annualInterestRate)) &&
+                            Number(item.annualInterestRate) >= 0 && Number(item.annualInterestRate) <= 100)) &&
+                    (item.remainingTenureMonths === undefined ||
+                        (Number.isInteger(Number(item.remainingTenureMonths)) && Number(item.remainingTenureMonths) >= 0)) &&
+                    (item.monthlyEmi === undefined ||
+                        (Number.isFinite(Number(item.monthlyEmi)) && Number(item.monthlyEmi) > 0))
                 );
                 const validGoals = Array.isArray(fileData.goals || []) && (fileData.goals || []).every(item =>
                     item && typeof item.id === 'string' && typeof item.name === 'string' &&
@@ -1203,10 +1252,54 @@
                     Number.isFinite(Number(item.saved)) && Number(item.saved) >= 0 &&
                     /^\d{4}-\d{2}-\d{2}$/.test(item.date)
                 );
+                const driveRecurringTransactions = fileData.recurringTransactions === undefined
+                    ? []
+                    : fileData.recurringTransactions;
+                const validRecurringTransactions = Array.isArray(driveRecurringTransactions) &&
+                    driveRecurringTransactions.every(item =>
+                        item && typeof item.id === 'string' &&
+                        ['income', 'expense', 'emi'].includes(item.type) &&
+                        CASHFLOW_CATEGORIES[item.type].includes(item.category) &&
+                        Number.isFinite(Number(item.amount)) && Number(item.amount) > 0 &&
+                        isValidISODate(item.nextDueDate) &&
+                        Number.isInteger(Number(item.dayOfMonth)) &&
+                        Number(item.dayOfMonth) >= 1 && Number(item.dayOfMonth) <= 31 &&
+                        ['Self', 'Spouse'].includes(item.member) &&
+                        typeof item.description === 'string' &&
+                        (item.type !== 'emi' || typeof item.liabilityId === 'string')
+                    ) &&
+                    new Set(driveRecurringTransactions.map(item => item.id)).size === driveRecurringTransactions.length;
+                const driveLiabilities = Array.isArray(fileData.liabilities) ? fileData.liabilities : [];
+                const validRecurringEmiLinks = validRecurringTransactions && driveRecurringTransactions
+                    .filter(item => item.type === 'emi')
+                    .every(item => {
+                        const liability = driveLiabilities.find(record => record.id === item.liabilityId);
+                        return liability && liability.member === item.member &&
+                            isAmortizingLoanType(liability.type) &&
+                            Number.isFinite(Number(liability.annualInterestRate)) &&
+                            Number.isInteger(Number(liability.remainingTenureMonths)) &&
+                            Number(liability.remainingTenureMonths) > 0 &&
+                            Number.isFinite(Number(liability.monthlyEmi));
+                    });
+                const validEmiLinks = validTransactions && fileData.transactions
+                    .filter(item => item.type === 'emi')
+                    .every(item => {
+                        const liability = driveLiabilities.find(record => record.id === item.liabilityId);
+                        return liability && liability.member === item.member &&
+                            (item.interestAmount !== undefined ||
+                                (isAmortizingLoanType(liability.type) &&
+                                    Number.isFinite(Number(liability.annualInterestRate)) &&
+                                    Number.isInteger(Number(liability.remainingTenureMonths)) &&
+                                    Number(liability.remainingTenureMonths) > 0 &&
+                                    Number.isFinite(Number(liability.monthlyEmi))));
+                    }) &&
+                    driveLiabilities.every(liability => calculateLoanSchedule(
+                        liability, todayLocalISO(), '', fileData.transactions
+                    ).valid);
                 if (!Number.isFinite(selfOpening) || !Number.isFinite(spouseOpening) || !validTransactions ||
-                    !validLiabilities || !validGoals ||
+                    !validLiabilities || !validGoals || !validRecurringTransactions || !validRecurringEmiLinks || !validEmiLinks ||
                     (fileData.includeCashBalance !== undefined && typeof fileData.includeCashBalance !== 'boolean')) {
-                    throw new Error('portfolio.json contains invalid income, expense, or opening balance data.');
+                    throw new Error('portfolio.json contains invalid income, expense, EMI, liability, or opening balance data.');
                 }
                 portfolio = fileData.portfolio;
                 cashflowTransactions = fileData.transactions;
@@ -1232,6 +1325,7 @@
                 includeCashBalance = fileData.includeCashBalance === true;
                 liabilities = fileData.liabilities || [];
                 financialGoals = fileData.goals || [];
+                recurringTransactions = driveRecurringTransactions;
             } else {
                 throw new Error('portfolio.json does not contain a valid portfolio.');
             }
@@ -1255,9 +1349,10 @@
         async function saveToDrive() {
             handleAuth(async () => {
                 const fileContent = JSON.stringify({
-                    version: 3,
+                    version: 6,
                     portfolio,
                     transactions: cashflowTransactions,
+                    recurringTransactions,
                     cashOpeningBalances,
                     cashOpeningDates,
                     includeCashBalance,
@@ -1353,13 +1448,19 @@
             const totals = entries.reduce((result, item) => {
                 if (item.type === 'income') result.income += Number(item.amount);
                 else if (item.type === 'expense') result.expenses += Number(item.amount);
+                else if (item.type === 'emi') {
+                    const breakdown = emiBreakdownForTransaction(item);
+                    if (!breakdown) throw new Error(`Could not calculate the loan interest for transaction ${item.id}.`);
+                    result.expenses += breakdown.interestAmount;
+                    result.principalRepayments += breakdown.principalAmount;
+                }
                 else if (!cashOpeningDates[item.member] || item.date > cashOpeningDates[item.member]) {
                     if (item.type === 'transfer-in') result.transfersIn += Number(item.amount);
                     else result.transfersOut += Number(item.amount);
                 }
                 return result;
-            }, { income: 0, expenses: 0, transfersIn: 0, transfersOut: 0 });
-            const netFlow = totals.income - totals.expenses;
+            }, { income: 0, expenses: 0, principalRepayments: 0, transfersIn: 0, transfersOut: 0 });
+            const netFlow = totals.income - totals.expenses - totals.principalRepayments;
             const balance = openingBalance + netFlow + totals.transfersIn - totals.transfersOut;
             return { ...totals, openingBalance, netFlow, balance };
         }
@@ -1367,6 +1468,80 @@
         function todayLocalISO() {
             const now = new Date();
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        }
+
+        function isAmortizingLoanType(type) {
+            return ['Home loan', 'Personal loan', 'Vehicle loan', 'Education loan'].includes(type);
+        }
+
+        function roundCurrency(value) {
+            return Math.round((value + Number.EPSILON) * 100) / 100;
+        }
+
+        function monthsBetweenDates(startDate, endDate) {
+            const [startYear, startMonth] = startDate.split('-').map(Number);
+            const [endYear, endMonth] = endDate.split('-').map(Number);
+            return Math.max(1, (endYear - startYear) * 12 + endMonth - startMonth);
+        }
+
+        function calculateLoanSchedule(liability, asOfDate = todayLocalISO(), excludingTransactionId = '', transactionList = cashflowTransactions) {
+            let balance = Number(liability.balance);
+            let lastPaymentDate = liability.date;
+            const breakdowns = new Map();
+            const payments = transactionList
+                .filter(item => item.type === 'emi' && item.liabilityId === liability.id &&
+                    item.id !== excludingTransactionId && item.date > liability.date && item.date <= asOfDate)
+                .slice()
+                .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+
+            for (const payment of payments) {
+                const openingBalance = balance;
+                const interestAmount = payment.interestAmount !== undefined
+                    ? Number(payment.interestAmount)
+                    : isAmortizingLoanType(liability.type) && Number.isFinite(Number(liability.annualInterestRate))
+                        ? roundCurrency(openingBalance * (
+                            Math.pow(1 + Number(liability.annualInterestRate) / 1200, monthsBetweenDates(lastPaymentDate, payment.date)) - 1
+                        ))
+                        : NaN;
+                const principalAmount = roundCurrency(Number(payment.amount) - interestAmount);
+                if (!Number.isFinite(interestAmount) || interestAmount < 0 ||
+                    principalAmount <= 0 || principalAmount > openingBalance) {
+                    return { valid: false, balance, breakdowns, payments };
+                }
+                balance = roundCurrency(openingBalance - principalAmount);
+                breakdowns.set(payment.id, { openingBalance, interestAmount, principalAmount, closingBalance: balance });
+                lastPaymentDate = payment.date;
+            }
+            return { valid: true, balance, breakdowns, payments };
+        }
+
+        function emiBreakdownForTransaction(transaction) {
+            if (transaction.interestAmount !== undefined) {
+                const interestAmount = Number(transaction.interestAmount);
+                return {
+                    interestAmount,
+                    principalAmount: roundCurrency(Number(transaction.amount) - interestAmount)
+                };
+            }
+            const liability = liabilities.find(item => item.id === transaction.liabilityId);
+            if (!liability) return null;
+            return calculateLoanSchedule(liability, transaction.date).breakdowns.get(transaction.id) || null;
+        }
+
+        function liabilityBalanceAsOf(liability, asOfDate = todayLocalISO(), excludingTransactionId = '') {
+            const schedule = calculateLoanSchedule(liability, asOfDate, excludingTransactionId);
+            return schedule.valid ? schedule.balance : NaN;
+        }
+
+        function liabilityBalanceDate(liability, asOfDate = todayLocalISO()) {
+            const payments = calculateLoanSchedule(liability, asOfDate).payments;
+            return payments.length ? payments[payments.length - 1].date : liability.date;
+        }
+
+        function liabilityRemainingTenure(liability, asOfDate = todayLocalISO()) {
+            const payments = calculateLoanSchedule(liability, asOfDate).payments;
+            const monthsPaid = new Set(payments.map(item => item.date.slice(0, 7))).size;
+            return Math.max(0, Number(liability.remainingTenureMonths || 0) - monthsPaid);
         }
 
         function periodMatches(date, periodType, value) {
@@ -1395,23 +1570,128 @@
             renderCashflowDashboard();
         }
 
-        function updateCashflowCategories(selectedCategory = '') {
+        function updateCashflowCategories(selectedCategory = '', selectedLiabilityId = '') {
             const type = document.getElementById('cashflow-type').value;
             const select = document.getElementById('cashflow-category');
             const categories = CASHFLOW_CATEGORIES[type];
             select.innerHTML = categories.map(category => `<option value="${category}">${category}</option>`).join('');
             if (categories.includes(selectedCategory)) select.value = selectedCategory;
+
+            const emiDetails = document.getElementById('cashflow-emi-details');
+            const isEmi = type === 'emi';
+            emiDetails.classList.toggle('hidden', !isEmi);
+            emiDetails.classList.toggle('grid', isEmi);
+            const recurringEditId = document.getElementById('cashflow-recurring-edit-id').value;
+            const recurringOption = document.getElementById('cashflow-recurring-option');
+            const recurringCheckbox = document.getElementById('cashflow-recurring');
+            const canRecur = ['income', 'expense', 'emi'].includes(type) && (!document.getElementById('cashflow-edit-id').value || recurringEditId);
+            recurringOption.classList.toggle('hidden', !canRecur);
+            recurringOption.classList.toggle('flex', canRecur);
+            if (!canRecur && !recurringEditId) recurringCheckbox.checked = false;
+            const showRecurringHelp = canRecur && (recurringCheckbox.checked || recurringEditId);
+            document.getElementById('cashflow-recurring-help').classList.toggle('hidden', !showRecurringHelp);
+            document.getElementById('cashflow-date-label').textContent = showRecurringHelp ? 'Next due date' : 'Date';
+            const liabilitySelect = document.getElementById('cashflow-liability');
+            liabilitySelect.required = isEmi;
+            const member = document.getElementById('cashflow-member').value;
+            const memberLiabilities = liabilities.filter(item => item.member === member && isAmortizingLoanType(item.type));
+            liabilitySelect.replaceChildren(new Option(
+                memberLiabilities.length ? 'Select a loan' : 'Add a liability for this member first',
+                ''
+            ));
+            memberLiabilities.forEach(item => {
+                const option = new Option(
+                    `${item.name} — balance ${fmt(liabilityBalanceAsOf(item))}${
+                        Number.isFinite(Number(item.annualInterestRate)) ? ` at ${item.annualInterestRate}%` : ' — add loan terms to track'
+                    }`,
+                    item.id
+                );
+                option.disabled = !Number.isFinite(Number(item.annualInterestRate)) ||
+                    !Number.isFinite(Number(item.monthlyEmi)) ||
+                    Number(item.remainingTenureMonths) <= 0 ||
+                    !Number.isInteger(Number(item.remainingTenureMonths));
+                liabilitySelect.add(option);
+            });
+            if (memberLiabilities.some(item => item.id === selectedLiabilityId)) {
+                liabilitySelect.value = selectedLiabilityId;
+            }
+            updateEmiPreview();
+        }
+
+        function updateEmiAmountFromLoan() {
+            const liability = liabilities.find(item => item.id === document.getElementById('cashflow-liability').value);
+            if (liability?.monthlyEmi) document.getElementById('cashflow-amount').value = liability.monthlyEmi;
+            updateEmiPreview();
+        }
+
+        function updateEmiPreview() {
+            const preview = document.getElementById('cashflow-emi-preview');
+            if (!preview || document.getElementById('cashflow-type').value !== 'emi') return;
+            const liability = liabilities.find(item => item.id === document.getElementById('cashflow-liability').value);
+            if (!liability) {
+                preview.textContent = 'Select a loan with its annual rate, remaining tenure, and regular EMI recorded.';
+                return;
+            }
+            if (!Number.isFinite(Number(liability.annualInterestRate))) {
+                preview.textContent = 'Add the loan’s annual interest rate, remaining tenure, and regular EMI in Liabilities before recording a new payment.';
+                return;
+            }
+            const date = document.getElementById('cashflow-date').value;
+            const isRecurring = document.getElementById('cashflow-recurring').checked ||
+                Boolean(document.getElementById('cashflow-recurring-edit-id').value);
+            if (!date || date <= liability.date || (!isRecurring && date > todayLocalISO())) {
+                preview.textContent = isRecurring
+                    ? 'Choose a next due date after the loan balance date.'
+                    : 'Choose a payment date after the loan balance date and not in the future.';
+                return;
+            }
+            const editId = document.getElementById('cashflow-edit-id').value;
+            const precedingSchedule = calculateLoanSchedule(liability, date, editId);
+            const openingBalance = precedingSchedule.balance;
+            const amount = Number(document.getElementById('cashflow-amount').value);
+            const lastPaymentDate = precedingSchedule.payments.length
+                ? precedingSchedule.payments[precedingSchedule.payments.length - 1].date
+                : liability.date;
+            const interest = roundCurrency(openingBalance * (
+                Math.pow(1 + Number(liability.annualInterestRate) / 1200, monthsBetweenDates(lastPaymentDate, date)) - 1
+            ));
+            const principal = roundCurrency(amount - interest);
+            if (!Number.isFinite(amount) || amount <= interest || principal <= 0) {
+                preview.textContent = `Estimated interest for this payment: ${fmt(interest)}. Enter an EMI greater than the interest charge.`;
+                return;
+            }
+            if (principal > openingBalance) {
+                preview.textContent = `Estimated interest: ${fmt(interest)}. The principal portion cannot exceed the remaining loan balance of ${fmt(openingBalance)}.`;
+                return;
+            }
+            preview.textContent = `Estimated interest ${fmt(interest)} · principal ${fmt(principal)} · balance after payment ${fmt(roundCurrency(openingBalance - principal))}.`;
         }
 
         function resetCashflowForm() {
             const form = document.getElementById('cashflow-form');
             form.reset();
             document.getElementById('cashflow-edit-id').value = '';
+            document.getElementById('cashflow-recurring-edit-id').value = '';
             document.getElementById('cashflow-date').value = todayLocalISO();
             document.getElementById('cashflow-member').value = currentMemberFilter === 'spouse' ? 'Spouse' : 'Self';
             document.getElementById('cashflow-cancel-edit').classList.add('hidden');
             document.getElementById('cashflow-submit').innerText = 'Add transaction';
             updateCashflowCategories();
+        }
+
+        function isValidISODate(value) {
+            if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+            const date = new Date(`${value}T00:00:00Z`);
+            return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+        }
+
+        function addMonthsToISODate(value, months, preferredDay) {
+            const [year, month] = value.split('-').map(Number);
+            const targetMonth = new Date(Date.UTC(year, month - 1 + months, 1));
+            const targetYear = targetMonth.getUTCFullYear();
+            const targetMonthIndex = targetMonth.getUTCMonth();
+            const finalDay = Math.min(preferredDay, new Date(Date.UTC(targetYear, targetMonthIndex + 1, 0)).getUTCDate());
+            return `${targetYear}-${String(targetMonthIndex + 1).padStart(2, '0')}-${String(finalDay).padStart(2, '0')}`;
         }
 
         function setCashBalanceIncluded(included) {
@@ -1457,9 +1737,20 @@
             document.getElementById('liability-edit-id').value = '';
             document.getElementById('liability-date').value = todayLocalISO();
             document.getElementById('liability-member').value = currentMemberFilter === 'spouse' ? 'Spouse' : 'Self';
+            document.getElementById('liability-rate').value = '';
+            document.getElementById('liability-tenure').value = '';
+            document.getElementById('liability-emi').value = '';
             document.getElementById('liability-submit').innerText = 'Add liability';
             document.getElementById('liability-cancel-edit').classList.add('hidden');
             document.getElementById('liability-type').value = LIABILITY_TYPES[0];
+            updateLiabilityTermRequirements(LIABILITY_TYPES[0]);
+        }
+
+        function updateLiabilityTermRequirements(type) {
+            const required = isAmortizingLoanType(type);
+            ['liability-rate', 'liability-tenure', 'liability-emi'].forEach(id => {
+                document.getElementById(id).required = required;
+            });
         }
 
         function handleLiabilitySubmit(event) {
@@ -1469,19 +1760,84 @@
             const date = document.getElementById('liability-date').value;
             const member = document.getElementById('liability-member').value;
             const type = document.getElementById('liability-type').value;
+            const rateValue = document.getElementById('liability-rate').value;
+            const tenureValue = document.getElementById('liability-tenure').value;
+            const emiValue = document.getElementById('liability-emi').value;
+            const annualInterestRate = rateValue === '' ? null : Number(rateValue);
+            const remainingTenureMonths = tenureValue === '' ? null : Number(tenureValue);
+            const monthlyEmi = emiValue === '' ? null : Number(emiValue);
             if (!name || !Number.isFinite(balance) || balance < 0 ||
                 !/^\d{4}-\d{2}-\d{2}$/.test(date) || !['Self', 'Spouse'].includes(member) ||
                 !LIABILITY_TYPES.includes(type)) {
                 alert('Enter a valid liability name, type, member, balance, and date.');
                 return;
             }
+            if (isAmortizingLoanType(type) &&
+                (!Number.isFinite(annualInterestRate) || annualInterestRate < 0 || annualInterestRate > 100 ||
+                    !Number.isInteger(remainingTenureMonths) || remainingTenureMonths < 0 ||
+                    !Number.isFinite(monthlyEmi) || monthlyEmi <= 0)) {
+                alert('For a loan with EMI tracking, enter its annual interest rate, remaining tenure, and regular EMI.');
+                return;
+            }
+            if ((annualInterestRate !== null && (!Number.isFinite(annualInterestRate) || annualInterestRate < 0 || annualInterestRate > 100)) ||
+                (remainingTenureMonths !== null && (!Number.isInteger(remainingTenureMonths) || remainingTenureMonths < 0)) ||
+                (monthlyEmi !== null && (!Number.isFinite(monthlyEmi) || monthlyEmi <= 0))) {
+                alert('Enter a valid annual interest rate, remaining tenure, and regular EMI.');
+                return;
+            }
             const editId = document.getElementById('liability-edit-id').value;
-            const record = { id: editId || `liability-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name, type, member, balance, date };
+            const record = {
+                id: editId || `liability-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                name, type, member, balance, date,
+                ...(annualInterestRate !== null ? { annualInterestRate } : {}),
+                ...(remainingTenureMonths !== null ? { remainingTenureMonths } : {}),
+                ...(monthlyEmi !== null ? { monthlyEmi } : {})
+            };
             const index = liabilities.findIndex(item => item.id === editId);
             if (editId && index === -1) {
                 alert('This liability could not be found. Refresh the page and try again.');
                 return;
             }
+            const linkedEmis = cashflowTransactions.filter(item => item.type === 'emi' && item.liabilityId === record.id);
+            if (linkedEmis.some(item => item.member !== member)) {
+                alert('The liability member must match every linked EMI transaction.');
+                return;
+            }
+            const linkedRecurringEmis = recurringTransactions.filter(item => item.type === 'emi' && item.liabilityId === record.id);
+            if (linkedRecurringEmis.some(item =>
+                item.member !== member || !isAmortizingLoanType(type) ||
+                !Number.isFinite(annualInterestRate) ||
+                !Number.isInteger(remainingTenureMonths) || remainingTenureMonths <= 0 ||
+                !Number.isFinite(monthlyEmi) || item.nextDueDate <= date
+            )) {
+                alert('Keep the loan terms and member valid for its recurring EMI, and ensure the next due date is after the loan balance date.');
+                return;
+            }
+            const previousRecord = index >= 0 ? liabilities[index] : null;
+            let updatedTransactions = cashflowTransactions;
+            if (previousRecord && date < previousRecord.date && linkedEmis.length) {
+                alert('A loan with recorded EMI payments cannot be moved to an earlier balance date.');
+                return;
+            }
+            if (previousRecord && date > previousRecord.date) {
+                const historicalSchedule = calculateLoanSchedule(previousRecord, date);
+                if (!historicalSchedule.valid) {
+                    alert('Could not preserve the existing EMI history. Check the loan balance and recorded payments.');
+                    return;
+                }
+                updatedTransactions = cashflowTransactions.map(item => {
+                    const breakdown = historicalSchedule.breakdowns.get(item.id);
+                    return item.type === 'emi' && item.liabilityId === record.id &&
+                        item.interestAmount === undefined && breakdown
+                        ? { ...item, interestAmount: breakdown.interestAmount }
+                        : item;
+                });
+            }
+            if (!calculateLoanSchedule(record, todayLocalISO(), '', updatedTransactions).valid) {
+                alert('These loan details produce an invalid repayment schedule. Check the balance date, interest rate, EMI, and linked payments.');
+                return;
+            }
+            cashflowTransactions = updatedTransactions;
             if (index >= 0) liabilities[index] = record;
             else liabilities.push(record);
             resetLiabilityForm();
@@ -1498,8 +1854,13 @@
             document.getElementById('liability-name').value = item.name;
             document.getElementById('liability-type').value = item.type;
             document.getElementById('liability-member').value = item.member;
-            document.getElementById('liability-balance').value = item.balance;
-            document.getElementById('liability-date').value = item.date;
+            document.getElementById('liability-balance').value = liabilityBalanceAsOf(item);
+            document.getElementById('liability-date').value = todayLocalISO();
+            document.getElementById('liability-rate').value = item.annualInterestRate ?? '';
+            document.getElementById('liability-tenure').value = item.remainingTenureMonths !== undefined
+                ? liabilityRemainingTenure(item)
+                : '';
+            document.getElementById('liability-emi').value = item.monthlyEmi ?? '';
             document.getElementById('liability-submit').innerText = 'Save changes';
             document.getElementById('liability-cancel-edit').classList.remove('hidden');
             document.getElementById('liability-name').focus();
@@ -1508,6 +1869,14 @@
         function deleteLiability(id) {
             if (!liabilities.some(item => item.id === id)) {
                 alert('This liability could not be found. Refresh the page and try again.');
+                return;
+            }
+            if (cashflowTransactions.some(item => item.type === 'emi' && item.liabilityId === id)) {
+                alert('Delete the linked EMI transactions before deleting this liability.');
+                return;
+            }
+            if (recurringTransactions.some(item => item.type === 'emi' && item.liabilityId === id)) {
+                alert('Stop the linked recurring EMI schedule before deleting this liability.');
                 return;
             }
             if (!confirm('Are you sure you want to delete this liability?')) return;
@@ -1519,17 +1888,27 @@
             const memberLiabilities = currentMemberFilter === 'combined'
                 ? liabilities
                 : liabilities.filter(item => item.member.toLowerCase() === currentMemberFilter);
-            document.getElementById('liability-total').textContent = fmt(memberLiabilities.reduce((total, item) => total + Number(item.balance), 0));
+            document.getElementById('liability-total').textContent = fmt(memberLiabilities.reduce((total, item) => total + liabilityBalanceAsOf(item), 0));
             const tbody = document.getElementById('liability-table-body');
             tbody.replaceChildren();
             if (!memberLiabilities.length) {
-                tbody.innerHTML = '<tr data-empty><td colspan="5" class="py-5 text-center text-slate-400">No liabilities recorded for this view.</td></tr>';
+                tbody.innerHTML = '<tr data-empty><td colspan="6" class="py-5 text-center text-slate-400">No liabilities recorded for this view.</td></tr>';
                 return;
             }
             memberLiabilities.forEach(item => {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-slate-100';
-                [['Liability', `${item.name} — ${item.type}`], ['Member', item.member], ['Balance', fmt(item.balance)], ['As of', item.date]].forEach(([label, text]) => {
+                const loanDetails = isAmortizingLoanType(item.type) &&
+                    Number.isFinite(Number(item.annualInterestRate)) && Number.isFinite(Number(item.monthlyEmi))
+                    ? ` · ${Number(item.annualInterestRate)}% p.a. · EMI ${fmt(Number(item.monthlyEmi))}`
+                    : '';
+                const remainingMonths = liabilityRemainingTenure(item);
+                const remainingTerm = isAmortizingLoanType(item.type) && item.remainingTenureMonths
+                    ? remainingMonths > 0 ? `${remainingMonths} months` : 'Paid off'
+                    : '—';
+                [['Liability', `${item.name} — ${item.type}${loanDetails}`], ['Member', item.member],
+                    ['Balance', fmt(liabilityBalanceAsOf(item))], ['Remaining term', remainingTerm],
+                    ['As of', liabilityBalanceDate(item)]].forEach(([label, text]) => {
                     const cell = document.createElement('td');
                     cell.dataset.label = label;
                     cell.className = 'p-3 text-slate-700';
@@ -1693,22 +2072,129 @@
                 return;
             }
             const editId = document.getElementById('cashflow-edit-id').value;
+            const existingTransaction = editId
+                ? cashflowTransactions.find(item => item.id === editId)
+                : null;
             const type = document.getElementById('cashflow-type').value;
             const date = document.getElementById('cashflow-date').value;
             const member = document.getElementById('cashflow-member').value;
-            if (!['income', 'expense', 'transfer-in', 'transfer-out'].includes(type) ||
+            if (!['income', 'expense', 'emi', 'transfer-in', 'transfer-out'].includes(type) ||
                 !/^\d{4}-\d{2}-\d{2}$/.test(date) || !['Self', 'Spouse'].includes(member)) {
                 alert('Enter a valid transaction type, date, and member.');
                 return;
             }
+            const category = document.getElementById('cashflow-category').value;
+            const allowedCategories = CASHFLOW_CATEGORIES[type];
+            if (!allowedCategories || !allowedCategories.includes(category)) {
+                alert('Select a valid transaction category.');
+                return;
+            }
+            const recurringEditId = document.getElementById('cashflow-recurring-edit-id').value;
+            if (recurringEditId || document.getElementById('cashflow-recurring').checked) {
+                if (!['income', 'expense', 'emi'].includes(type) || !isValidISODate(date)) {
+                    alert('Recurring schedules require a valid date and an income, expense, or loan EMI.');
+                    return;
+                }
+                const existingSchedule = recurringEditId
+                    ? recurringTransactions.find(item => item.id === recurringEditId)
+                    : null;
+                if (recurringEditId && !existingSchedule) {
+                    alert('This recurring transaction could not be found. Refresh the page and try again.');
+                    return;
+                }
+                let liabilityId = '';
+                if (type === 'emi') {
+                    liabilityId = document.getElementById('cashflow-liability').value;
+                    const liability = liabilities.find(item => item.id === liabilityId && item.member === member);
+                    if (!liability || !isAmortizingLoanType(liability.type) ||
+                        !Number.isFinite(Number(liability.annualInterestRate)) ||
+                        !Number.isInteger(Number(liability.remainingTenureMonths)) ||
+                        liabilityRemainingTenure(liability) <= 0 ||
+                        !Number.isFinite(Number(liability.monthlyEmi)) ||
+                        date <= liability.date || category !== 'Loan EMI') {
+                        alert('Select a matching active loan with its annual rate, remaining tenure, and regular EMI, and use a next due date after its balance date.');
+                        return;
+                    }
+                }
+                const schedule = {
+                    id: recurringEditId || `recurring-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    type,
+                    category,
+                    amount,
+                    nextDueDate: date,
+                    dayOfMonth: existingSchedule && existingSchedule.nextDueDate === date
+                        ? existingSchedule.dayOfMonth
+                        : Number(date.slice(-2)),
+                    member,
+                    description: document.getElementById('cashflow-description').value.trim(),
+                    ...(type === 'emi' ? { liabilityId } : {})
+                };
+                if (recurringEditId) {
+                    recurringTransactions = recurringTransactions.map(item => item.id === recurringEditId ? schedule : item);
+                } else {
+                    recurringTransactions.push(schedule);
+                }
+                resetCashflowForm();
+                saveAndRefresh();
+                return;
+            }
+            let emiDetails = {};
+            if (type === 'emi') {
+                const liabilityId = document.getElementById('cashflow-liability').value;
+                const liability = liabilities.find(item => item.id === liabilityId && item.member === member);
+                if (!liability || !isAmortizingLoanType(liability.type) ||
+                    !Number.isFinite(Number(liability.annualInterestRate)) ||
+                    !Number.isInteger(Number(liability.remainingTenureMonths)) ||
+                    !Number.isFinite(Number(liability.monthlyEmi)) ||
+                    date <= liability.date || date > todayLocalISO()) {
+                    alert('Select a matching loan with its annual rate, remaining tenure, and regular EMI, and use a payment date after its balance date.');
+                    return;
+                }
+                const paymentMonth = date.slice(0, 7);
+                const duplicateMonth = cashflowTransactions.some(item =>
+                    item.type === 'emi' && item.liabilityId === liability.id &&
+                    item.id !== editId && item.date.slice(0, 7) === paymentMonth
+                );
+                if (duplicateMonth) {
+                    alert('Only one EMI payment per loan can be recorded in a month.');
+                    return;
+                }
+                const payment = {
+                    id: editId || `emi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    type,
+                    category,
+                    amount,
+                    date,
+                    member,
+                    description: document.getElementById('cashflow-description').value.trim(),
+                    liabilityId
+                };
+                const updatedTransactions = editId
+                    ? cashflowTransactions.map(item => item.id === editId ? payment : item)
+                    : [...cashflowTransactions, payment];
+                if (!calculateLoanSchedule(liability, todayLocalISO(), '', updatedTransactions).valid) {
+                    alert('This payment would not repay principal or would exceed the loan balance. Check the EMI amount, rate, date, and loan balance.');
+                    return;
+                }
+                emiDetails = { liabilityId };
+            }
             const transaction = {
                 id: editId || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
                 type,
-                category: document.getElementById('cashflow-category').value,
+                category,
                 amount,
                 date,
                 member,
-                description: document.getElementById('cashflow-description').value.trim()
+                description: document.getElementById('cashflow-description').value.trim(),
+                ...(existingTransaction?.recurringId
+                    ? {
+                        recurringId: existingTransaction.recurringId,
+                        ...(isValidISODate(existingTransaction.recurringDueDate)
+                            ? { recurringDueDate: existingTransaction.recurringDueDate }
+                            : {})
+                    }
+                    : {}),
+                ...emiDetails
             };
             if (editId) {
                 const index = cashflowTransactions.findIndex(item => item.id === editId);
@@ -1730,16 +2216,107 @@
                 alert('This transaction could not be found. Refresh the page and try again.');
                 return;
             }
+            document.getElementById('cashflow-recurring-edit-id').value = '';
+            document.getElementById('cashflow-recurring').checked = false;
             document.getElementById('cashflow-edit-id').value = transaction.id;
             document.getElementById('cashflow-type').value = transaction.type;
-            updateCashflowCategories(transaction.category);
+            document.getElementById('cashflow-member').value = transaction.member;
+            updateCashflowCategories(transaction.category, transaction.liabilityId);
             document.getElementById('cashflow-amount').value = transaction.amount;
             document.getElementById('cashflow-date').value = transaction.date;
-            document.getElementById('cashflow-member').value = transaction.member;
             document.getElementById('cashflow-description').value = transaction.description;
             document.getElementById('cashflow-cancel-edit').classList.remove('hidden');
             document.getElementById('cashflow-submit').innerText = 'Save changes';
+            updateEmiPreview();
             document.getElementById('cashflow-type').focus();
+        }
+
+        function editRecurringTransaction(id) {
+            const schedule = recurringTransactions.find(item => item.id === id);
+            if (!schedule) {
+                alert('This recurring transaction could not be found. Refresh the page and try again.');
+                return;
+            }
+            document.getElementById('cashflow-edit-id').value = '';
+            document.getElementById('cashflow-recurring-edit-id').value = schedule.id;
+            document.getElementById('cashflow-recurring').checked = true;
+            document.getElementById('cashflow-type').value = schedule.type;
+            document.getElementById('cashflow-member').value = schedule.member;
+            updateCashflowCategories(schedule.category, schedule.liabilityId);
+            document.getElementById('cashflow-amount').value = schedule.amount;
+            document.getElementById('cashflow-date').value = schedule.nextDueDate;
+            document.getElementById('cashflow-description').value = schedule.description;
+            document.getElementById('cashflow-cancel-edit').classList.remove('hidden');
+            document.getElementById('cashflow-submit').innerText = 'Save recurring schedule';
+            document.getElementById('cashflow-type').focus();
+        }
+
+        function markRecurringPaid(id) {
+            const schedule = recurringTransactions.find(item => item.id === id);
+            if (!schedule) {
+                alert('This recurring transaction could not be found. Refresh the page and try again.');
+                return;
+            }
+            if (!isValidISODate(schedule.nextDueDate) || !CASHFLOW_CATEGORIES[schedule.type]?.includes(schedule.category) ||
+                !Number.isFinite(Number(schedule.amount)) || Number(schedule.amount) <= 0 ||
+                !['Self', 'Spouse'].includes(schedule.member) ||
+                !Number.isInteger(Number(schedule.dayOfMonth)) || Number(schedule.dayOfMonth) < 1 || Number(schedule.dayOfMonth) > 31) {
+                alert('This recurring transaction has invalid details. Edit or remove it before recording a payment.');
+                return;
+            }
+            let transaction = {
+                id: `recurring-payment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                type: schedule.type,
+                category: schedule.category,
+                amount: Number(schedule.amount),
+                date: todayLocalISO(),
+                member: schedule.member,
+                description: schedule.description,
+                recurringId: schedule.id,
+                recurringDueDate: schedule.nextDueDate
+            };
+            if (schedule.type === 'emi') {
+                const liability = liabilities.find(item => item.id === schedule.liabilityId && item.member === schedule.member);
+                if (!liability || !isAmortizingLoanType(liability.type) ||
+                    !Number.isFinite(Number(liability.annualInterestRate)) ||
+                    !Number.isInteger(Number(liability.remainingTenureMonths)) ||
+                    liabilityRemainingTenure(liability) <= 0 ||
+                    !Number.isFinite(Number(liability.monthlyEmi)) ||
+                    transaction.date <= liability.date || schedule.category !== 'Loan EMI') {
+                    alert('This EMI schedule no longer has a matching active loan. Edit or stop the schedule, or update the loan details.');
+                    return;
+                }
+                const paymentMonth = transaction.date.slice(0, 7);
+                if (cashflowTransactions.some(item =>
+                    item.type === 'emi' && item.liabilityId === liability.id && item.date.slice(0, 7) === paymentMonth
+                )) {
+                    alert('An EMI for this loan is already recorded this month.');
+                    return;
+                }
+                transaction = { ...transaction, liabilityId: liability.id };
+                const updatedTransactions = [...cashflowTransactions, transaction];
+                if (!calculateLoanSchedule(liability, todayLocalISO(), '', updatedTransactions).valid) {
+                    alert('This EMI would not repay principal or would exceed the loan balance. Check the loan balance, interest rate, and EMI amount.');
+                    return;
+                }
+            }
+            cashflowTransactions.push(transaction);
+            schedule.nextDueDate = addMonthsToISODate(schedule.nextDueDate, 1, Number(schedule.dayOfMonth));
+            if (document.getElementById('cashflow-recurring-edit-id').value === id) {
+                document.getElementById('cashflow-date').value = schedule.nextDueDate;
+            }
+            saveAndRefresh();
+        }
+
+        function deleteRecurringTransaction(id) {
+            if (!recurringTransactions.some(item => item.id === id)) {
+                alert('This recurring transaction could not be found. Refresh the page and try again.');
+                return;
+            }
+            if (!confirm('Stop this recurring transaction? Previously recorded payments will remain in your transactions.')) return;
+            recurringTransactions = recurringTransactions.filter(item => item.id !== id);
+            if (document.getElementById('cashflow-recurring-edit-id').value === id) resetCashflowForm();
+            saveAndRefresh();
         }
 
         function deleteCashflowTransaction(id) {
@@ -1747,14 +2324,52 @@
                 alert('This transaction could not be found. Refresh the page and try again.');
                 return;
             }
-            if (!confirm('Are you sure you want to delete this transaction?')) return;
+            const transaction = cashflowTransactions.find(item => item.id === id);
+            const confirmation = transaction.type === 'emi'
+                ? 'Delete this EMI transaction? Its principal repayment will be reversed in the linked loan balance. If it is the latest payment from a recurring schedule, that schedule’s due date will be restored.'
+                : 'Delete this transaction? If it is the latest payment from a recurring schedule, that schedule’s due date will be restored.';
+            if (!confirm(confirmation)) return;
+            restoreRecurringScheduleForDeletedTransaction(transaction);
             cashflowTransactions = cashflowTransactions.filter(item => item.id !== id);
             saveAndRefresh();
+        }
+
+        function restoreRecurringScheduleForDeletedTransaction(transaction) {
+            if (!transaction.recurringId) return;
+            const schedule = recurringTransactions.find(item => item.id === transaction.recurringId);
+            if (!schedule || !isValidISODate(schedule.nextDueDate) ||
+                !Number.isInteger(Number(schedule.dayOfMonth)) || Number(schedule.dayOfMonth) < 1 ||
+                Number(schedule.dayOfMonth) > 31) return;
+
+            const payments = cashflowTransactions.filter(item => item.recurringId === schedule.id);
+            let occurrenceDate = isValidISODate(transaction.recurringDueDate)
+                ? transaction.recurringDueDate
+                : '';
+
+            if (!occurrenceDate) {
+                const latestLegacyPayment = payments
+                    .filter(item => !isValidISODate(item.recurringDueDate))
+                    .slice()
+                    .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
+                    .pop();
+                if (!latestLegacyPayment || latestLegacyPayment.id !== transaction.id) return;
+                occurrenceDate = addMonthsToISODate(schedule.nextDueDate, -1, Number(schedule.dayOfMonth));
+            }
+
+            if (schedule.nextDueDate !== addMonthsToISODate(occurrenceDate, 1, Number(schedule.dayOfMonth)) ||
+                payments.some(item => item.id !== transaction.id &&
+                    isValidISODate(item.recurringDueDate) && item.recurringDueDate >= occurrenceDate)) return;
+
+            schedule.nextDueDate = occurrenceDate;
         }
 
         function renderCashflowDashboard() {
             const includeCheckbox = document.getElementById('include-cash-balance');
             if (!includeCheckbox) return;
+            updateCashflowCategories(
+                document.getElementById('cashflow-category').value,
+                document.getElementById('cashflow-liability').value
+            );
             includeCheckbox.checked = includeCashBalance;
             document.getElementById('opening-balance-self').value = Number(cashOpeningBalances.Self || 0);
             document.getElementById('opening-balance-spouse').value = Number(cashOpeningBalances.Spouse || 0);
@@ -1762,6 +2377,7 @@
             document.getElementById('opening-date-spouse').value = cashOpeningDates.Spouse || '';
             document.getElementById('essential-expenses-self').value = Number(monthlyEssentialExpenses.Self || 0);
             document.getElementById('essential-expenses-spouse').value = Number(monthlyEssentialExpenses.Spouse || 0);
+            renderRecurringTransactions();
 
             const summary = cashflowSummary();
             const period = document.getElementById('report-period').value;
@@ -1772,23 +2388,37 @@
             const periodSummary = periodEntries.reduce((result, item) => {
                 if (item.type === 'income') result.income += Number(item.amount);
                 else if (item.type === 'expense') result.expenses += Number(item.amount);
+                else if (item.type === 'emi') {
+                    const breakdown = emiBreakdownForTransaction(item);
+                    if (!breakdown) throw new Error(`Could not calculate the loan interest for transaction ${item.id}.`);
+                    result.expenses += breakdown.interestAmount;
+                    result.principalRepayments += breakdown.principalAmount;
+                }
                 else if (item.type === 'transfer-in') result.transfersIn += Number(item.amount);
                 else if (item.type === 'transfer-out') result.transfersOut += Number(item.amount);
                 return result;
-            }, { income: 0, expenses: 0, transfersIn: 0, transfersOut: 0 });
+            }, { income: 0, expenses: 0, principalRepayments: 0, transfersIn: 0, transfersOut: 0 });
             const savings = periodSummary.income - periodSummary.expenses;
             const savingsRate = periodSummary.income > 0 ? savings / periodSummary.income * 100 : null;
             tiles('cashflow-tiles', [
                 ['Period income', fmtC(periodSummary.income), 'text-emerald-700'],
                 ['Period expenses', fmtC(periodSummary.expenses), 'text-rose-600'],
                 ['Net savings', fmtC(savings), savings >= 0 ? 'text-emerald-700' : 'text-rose-600'],
-                ['Savings rate', savingsRate === null ? '—' : `${savingsRate.toFixed(1)}%`, savingsRate === null ? 'text-slate-500' : savingsRate >= 0 ? 'text-indigo-700' : 'text-rose-600', 'Based on recorded income and expenses'],
+                ['Savings rate', savingsRate === null ? '—' : `${savingsRate.toFixed(1)}%`, savingsRate === null ? 'text-slate-500' : savingsRate >= 0 ? 'text-indigo-700' : 'text-rose-600', 'Interest is an expense; principal is shown separately'],
+                ['EMI principal repaid', fmtC(periodSummary.principalRepayments), 'text-amber-700'],
                 ['Net transfers', fmtC(periodSummary.transfersIn - periodSummary.transfersOut), 'text-slate-700'],
                 ['Running cash balance', fmtC(summary.balance), summary.balance >= 0 ? 'text-indigo-700' : 'text-rose-600', includeCashBalance ? 'Included in net worth' : 'Not included in net worth']
             ], 'indigo');
 
             const expenseByCategory = periodEntries.reduce((result, item) => {
                 if (item.type === 'expense') result[item.category] = (result[item.category] || 0) + Number(item.amount);
+                else if (item.type === 'emi') {
+                    const breakdown = emiBreakdownForTransaction(item);
+                    if (!breakdown) throw new Error(`Could not calculate the loan interest for transaction ${item.id}.`);
+                    if (breakdown.interestAmount > 0) {
+                        result['Loan interest'] = (result['Loan interest'] || 0) + breakdown.interestAmount;
+                    }
+                }
                 return result;
             }, {});
             const breakdown = document.getElementById('cashflow-breakdown');
@@ -1841,21 +2471,26 @@
                 .slice()
                 .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
             if (!entries.length) {
-                tbody.innerHTML = '<tr data-empty><td colspan="6" class="py-6 text-center text-slate-400">No income or expenses recorded for this view.</td></tr>';
+                tbody.innerHTML = '<tr data-empty><td colspan="6" class="py-6 text-center text-slate-400">No transactions recorded for this view.</td></tr>';
                 return;
             }
 
             entries.forEach(item => {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-slate-100 transition hover:bg-slate-50';
-                const typeLabels = { income: 'Income', expense: 'Expense', 'transfer-in': 'Transfer in', 'transfer-out': 'Transfer out' };
+                const typeLabels = { income: 'Income', expense: 'Expense', emi: 'Loan EMI', 'transfer-in': 'Transfer in', 'transfer-out': 'Transfer out' };
                 const positive = item.type === 'income' || item.type === 'transfer-in';
+                const liability = item.type === 'emi' ? liabilities.find(record => record.id === item.liabilityId) : null;
+                const emiBreakdown = item.type === 'emi' ? emiBreakdownForTransaction(item) : null;
+                const transactionDetails = item.type === 'emi'
+                    ? `${liability?.name || 'Loan'} — principal ${fmt(emiBreakdown?.principalAmount || 0)}, interest ${fmt(emiBreakdown?.interestAmount || 0)}`
+                    : item.description ? `${item.category} — ${item.description}` : item.category;
                 const values = [
                     ['Date', item.date, 'p-3 text-slate-600'],
-                    ['Type', typeLabels[item.type] || item.type, `p-3 font-semibold ${item.type === 'income' ? 'text-emerald-700' : item.type === 'expense' ? 'text-rose-600' : 'text-slate-600'}`],
-                    ['Category / Description', item.description ? `${item.category} — ${item.description}` : item.category, 'p-3 font-medium text-slate-800'],
+                    ['Type', typeLabels[item.type] || item.type, `p-3 font-semibold ${item.type === 'income' ? 'text-emerald-700' : ['expense', 'emi'].includes(item.type) ? 'text-rose-600' : 'text-slate-600'}`],
+                    ['Category / Payment details', transactionDetails, 'p-3 font-medium text-slate-800'],
                     ['Member', item.member, 'p-3 text-slate-600'],
-                    ['Amount', `${positive ? '+' : '−'}${fmt(item.amount)}`, `p-3 text-right font-mono font-semibold ${item.type === 'income' ? 'text-emerald-700' : item.type === 'expense' ? 'text-rose-600' : 'text-slate-700'}`]
+                    ['Amount', `${positive ? '+' : '−'}${fmt(item.amount)}`, `p-3 text-right font-mono font-semibold ${item.type === 'income' ? 'text-emerald-700' : ['expense', 'emi'].includes(item.type) ? 'text-rose-600' : 'text-slate-700'}`]
                 ];
                 values.forEach(([label, value, className]) => {
                     const cell = document.createElement('td');
@@ -1888,9 +2523,69 @@
             });
         }
 
+        function renderRecurringTransactions() {
+            const list = document.getElementById('recurring-transactions-list');
+            if (!list) return;
+            list.replaceChildren();
+            const schedules = (currentMemberFilter === 'combined'
+                ? recurringTransactions
+                : recurringTransactions.filter(item => item.member.toLowerCase() === currentMemberFilter))
+                .slice()
+                .sort((a, b) => a.nextDueDate.localeCompare(b.nextDueDate));
+            if (!schedules.length) {
+                list.className = 'mt-3 text-sm text-slate-500';
+                list.textContent = 'No recurring transactions for this view. Create one from the transaction form above.';
+                return;
+            }
+            list.className = 'mt-3 grid grid-cols-1 gap-3 md:grid-cols-2';
+            schedules.forEach(schedule => {
+                const card = document.createElement('article');
+                card.className = 'rounded-xl border border-slate-200 p-4';
+                const header = document.createElement('div');
+                header.className = 'flex items-start justify-between gap-3';
+                const details = document.createElement('div');
+                const title = document.createElement('h4');
+                title.className = 'font-semibold text-slate-800';
+                const liability = schedule.type === 'emi'
+                    ? liabilities.find(item => item.id === schedule.liabilityId)
+                    : null;
+                title.textContent = schedule.description || liability?.name || schedule.category;
+                const metadata = document.createElement('p');
+                metadata.className = 'mt-1 text-xs text-slate-500';
+                const typeLabel = schedule.type === 'emi' ? 'Loan EMI' : schedule.type === 'income' ? 'Income' : 'Expense';
+                metadata.textContent = `${typeLabel}${schedule.type === 'emi' && liability ? ` · ${liability.name}` : ` · ${schedule.category}`} · ${schedule.member}`;
+                const dueDate = document.createElement('p');
+                dueDate.className = 'mt-2 text-sm text-slate-600';
+                dueDate.textContent = `Next due ${schedule.nextDueDate} · ${fmt(schedule.amount)}`;
+                details.append(title, metadata, dueDate);
+                const paidButton = document.createElement('button');
+                paidButton.type = 'button';
+                paidButton.className = 'min-h-[44px] shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700';
+                paidButton.textContent = 'Mark paid';
+                paidButton.onclick = () => markRecurringPaid(schedule.id);
+                header.append(details, paidButton);
+                const actions = document.createElement('div');
+                actions.className = 'mt-2 flex gap-2';
+                const editButton = document.createElement('button');
+                editButton.type = 'button';
+                editButton.className = 'min-h-[40px] rounded-lg px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50';
+                editButton.textContent = 'Edit';
+                editButton.onclick = () => editRecurringTransaction(schedule.id);
+                const stopButton = document.createElement('button');
+                stopButton.type = 'button';
+                stopButton.className = 'min-h-[40px] rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50';
+                stopButton.textContent = 'Stop recurring';
+                stopButton.onclick = () => deleteRecurringTransaction(schedule.id);
+                actions.append(editButton, stopButton);
+                card.append(header, actions);
+                list.appendChild(card);
+            });
+        }
+
         function saveAndRefresh() {
             localStorage.setItem('wealthpulse_portfolio', JSON.stringify(portfolio));
             localStorage.setItem(CASHFLOW_STORAGE_KEY, JSON.stringify(cashflowTransactions));
+            localStorage.setItem(RECURRING_STORAGE_KEY, JSON.stringify(recurringTransactions));
             localStorage.setItem(CASH_OPENING_STORAGE_KEY, JSON.stringify(cashOpeningBalances));
             localStorage.setItem(CASH_OPENING_DATES_KEY, JSON.stringify(cashOpeningDates));
             localStorage.setItem(INCLUDE_CASH_STORAGE_KEY, String(includeCashBalance));
@@ -1921,15 +2616,15 @@
             const viewLiabilities = currentMemberFilter === 'combined'
                 ? liabilities
                 : liabilities.filter(item => item.member.toLowerCase() === currentMemberFilter);
-            const liabilityTotal = viewLiabilities.reduce((total, item) => total + Number(item.balance), 0);
+            const liabilityTotal = viewLiabilities.reduce((total, item) => total + liabilityBalanceAsOf(item), 0);
 
             portfolio.forEach(item => { const c = calc(item).cur; if (item.member.toLowerCase() === 'self') selfNet += c; else spouseNet += c; });
             if (includeCashBalance) {
                 selfNet += cashflowSummary('self').balance;
                 spouseNet += cashflowSummary('spouse').balance;
             }
-            selfNet -= liabilities.filter(item => item.member === 'Self').reduce((total, item) => total + Number(item.balance), 0);
-            spouseNet -= liabilities.filter(item => item.member === 'Spouse').reduce((total, item) => total + Number(item.balance), 0);
+            selfNet -= liabilities.filter(item => item.member === 'Self').reduce((total, item) => total + liabilityBalanceAsOf(item), 0);
+            spouseNet -= liabilities.filter(item => item.member === 'Spouse').reduce((total, item) => total + liabilityBalanceAsOf(item), 0);
 
             filtered.forEach(item => {
                 const r = calc(item), sip = Number(item.sip || 0), cls = classOf(item);
