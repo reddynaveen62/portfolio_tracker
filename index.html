@@ -109,6 +109,78 @@
         }
 
         @media (max-width: 639px) {
+            #cashflow-tiles > div {
+                min-width: 0;
+                padding: 0.75rem;
+            }
+
+            #cashflow-tiles > div > p {
+                min-height: 1.75rem;
+                line-height: 1.25;
+            }
+
+            #cashflow-tiles > div > h4 {
+                overflow-wrap: anywhere;
+                font-size: 1rem;
+                line-height: 1.25rem;
+            }
+
+            #cashflow-tiles > div > span {
+                display: -webkit-box;
+                overflow: hidden;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+                line-height: 1rem;
+            }
+
+            #cashflow-tiles > div:last-child {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: center;
+                column-gap: 0.75rem;
+            }
+
+            #cashflow-tiles > div:last-child > p,
+            #cashflow-tiles > div:last-child > h4 {
+                min-height: 0;
+                margin-top: 0;
+            }
+
+            #cashflow-tiles > div:last-child > span {
+                grid-column: 1 / -1;
+            }
+        }
+
+        button:not(.section-toggle):not(.record-action-button):not(.transaction-type-card):not([role="tab"]):not(#google-login-button) {
+            height: 36px;
+            min-height: 36px;
+            border-radius: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1rem;
+        }
+
+        .transaction-type-card {
+            height: auto;
+            min-height: 5.25rem;
+            line-height: 1.25;
+        }
+
+        select:not([multiple]) {
+            height: 36px;
+            min-height: 36px;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 639px) {
             input:not([type="hidden"]),
             select:not([multiple]) {
                 font-size: 16px;
@@ -762,7 +834,22 @@
                 </div>
                 <div id="recurring-transactions-content" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                     <p class="text-xs text-slate-500">Record an occurrence to add it to your transactions. Each occurrence records today’s date and moves the next due date forward by one month.</p>
-                    <div id="recurring-transactions-list" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
+                    <div id="recurring-transactions-table-scroll" class="mt-3 hidden overflow-x-auto sm:block">
+                        <table class="w-full min-w-[760px] text-left text-sm">
+                            <thead>
+                                <tr class="bg-slate-100 text-xs uppercase text-slate-600">
+                                    <th class="p-3">Schedule</th>
+                                    <th class="p-3">Type / Category</th>
+                                    <th class="p-3">Member</th>
+                                    <th class="p-3">Next due</th>
+                                    <th class="p-3 text-right">Amount</th>
+                                    <th class="p-3 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recurring-transactions-table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                    <div id="recurring-transactions-mobile-cards" class="mt-3 grid grid-cols-1 gap-3 sm:hidden"></div>
                 </div>
             </section>
 
@@ -781,16 +868,16 @@
                         <div class="flex flex-wrap items-end justify-between gap-3">
                             <div>
                                 <h3 class="font-bold text-slate-800">Transaction history</h3>
-                                <p class="mt-1 text-xs text-slate-500">Choose a month and type card to filter transactions.</p>
+                                <p class="mt-1 text-xs text-slate-500">Filter transactions by month and type.</p>
                             </div>
-                            <label class="text-xs font-semibold text-slate-700">Month
-                                <select id="transaction-month-filter" class="min-h-[40px] min-w-[160px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="setTransactionMonthFilter(this.value)">
+                            <label class="w-full text-xs font-semibold text-slate-700 sm:w-auto">Month
+                                <select id="transaction-month-filter" class="min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:min-w-[160px]" onchange="setTransactionMonthFilter(this.value)">
                                     <option value="all">All months</option>
                                 </select>
                             </label>
                         </div>
                     </div>
-                    <div id="transaction-type-cards" class="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-6" aria-label="Filter transactions by type"></div>
+                    <div id="transaction-type-cards" class="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 sm:gap-3 sm:p-4 lg:grid-cols-6" aria-label="Filter transactions by type"></div>
                     <div id="transaction-mobile-cards" class="grid grid-cols-1 gap-3 border-t border-slate-100 p-4 sm:hidden"></div>
                     <div id="cashflow-table-scroll" class="hidden overflow-x-auto border-t border-slate-100 sm:block">
                         <table class="w-full min-w-[700px] text-left border-collapse">
@@ -1431,7 +1518,7 @@
             return result.files && result.files.length ? result.files[0] : null;
         }
 
-        async function loadPortfolioFromDrive(showResult = true) {
+        async function loadPortfolioFromDrive() {
             const file = await findPortfolioFile();
             if (!file) {
                 setDriveNotice('No portfolio.json was found in Google Drive. Showing data saved in this browser; use Save Drive to create a cloud copy.');
@@ -1570,13 +1657,12 @@
             }
             saveAndRefresh();
             setDriveNotice('');
-            if (showResult) alert('Portfolio successfully loaded from Google Drive!');
             return true;
         }
 
         function signInWithGoogle() {
             handleAuth(async () => {
-                await loadPortfolioFromDrive(false);
+                await loadPortfolioFromDrive();
                 showDashboard();
             }, 'Loading your portfolio from Google Drive…');
         }
@@ -1606,7 +1692,6 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: fileContent
                     });
-                    alert('Portfolio successfully updated in Google Drive!');
                 } else {
                     const boundary = `wealthpulse-${Date.now()}`;
                     const body = new Blob([
@@ -1623,7 +1708,6 @@
                     });
                     if (!result.id) throw new Error('Google Drive did not return an ID for the saved file.');
                     targetFileId = result.id;
-                    alert('Portfolio file created and saved to Google Drive!');
                 }
             }, 'Saving your portfolio to Google Drive…');
         }
@@ -2651,12 +2735,18 @@
             document.getElementById('cashflow-type').focus();
         }
 
+        function isRecurringScheduleDue(schedule, today = todayLocalISO()) {
+            return isValidISODate(schedule.nextDueDate) &&
+                schedule.nextDueDate.slice(0, 7) <= today.slice(0, 7);
+        }
+
         function markRecurringPaid(id) {
             const schedule = recurringTransactions.find(item => item.id === id);
             if (!schedule) {
                 alert('This recurring transaction could not be found. Refresh the page and try again.');
                 return;
             }
+            if (!isRecurringScheduleDue(schedule)) return;
             if (!isValidISODate(schedule.nextDueDate) || !CASHFLOW_CATEGORIES[schedule.type]?.includes(schedule.category) ||
                 !Number.isFinite(Number(schedule.amount)) || Number(schedule.amount) <= 0 ||
                 !['Self', 'Spouse'].includes(schedule.member) ||
@@ -2940,6 +3030,7 @@
             const entries = memberEntries
                 .filter(item => currentTransactionMonthFilter === 'all' || item.date.slice(0, 7) === currentTransactionMonthFilter)
                 .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+
             const groups = [
                 { id: 'all', label: 'All transactions', icon: 'fa-list', color: 'indigo' },
                 { id: 'income', label: 'Income', icon: 'fa-arrow-trend-up', color: 'emerald' },
@@ -2964,27 +3055,28 @@
                 const total = groupEntries.reduce((sum, item) => sum + Number(item.amount), 0);
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.setAttribute('aria-pressed', String(currentTransactionTypeFilter === group.id));
-                button.className = `rounded-xl border p-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+                button.className = `transaction-type-card min-w-0 w-full rounded-xl border p-2.5 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:p-3 ${
                     currentTransactionTypeFilter === group.id
                         ? `${themes[group.color].selected} shadow-sm`
                         : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
                 }`;
+                button.setAttribute('aria-pressed', String(currentTransactionTypeFilter === group.id));
                 const heading = document.createElement('span');
-                heading.className = `flex items-center gap-2 text-xs font-semibold ${
+                heading.className = `flex min-w-0 items-center gap-1.5 text-[10px] font-semibold leading-tight sm:gap-2 sm:text-xs ${
                     currentTransactionTypeFilter === group.id ? themes[group.color].heading : 'text-slate-600'
                 }`;
                 const icon = document.createElement('i');
-                icon.className = `fa-solid ${group.icon}`;
+                icon.className = `fa-solid ${group.icon} shrink-0`;
                 icon.setAttribute('aria-hidden', 'true');
                 const label = document.createElement('span');
+                label.className = 'min-w-0';
                 label.textContent = group.label;
                 heading.append(icon, label);
                 const amount = document.createElement('span');
-                amount.className = 'mt-2 block truncate text-sm font-bold text-slate-900';
+                amount.className = 'mt-2 block break-words text-xs font-bold text-slate-900 sm:text-sm';
                 amount.textContent = fmt(total);
                 const count = document.createElement('span');
-                count.className = 'mt-0.5 block text-[11px] text-slate-500';
+                count.className = 'mt-0.5 block text-[10px] leading-tight text-slate-500 sm:text-[11px]';
                 count.textContent = `${groupEntries.length} ${groupEntries.length === 1 ? 'transaction' : 'transactions'}`;
                 button.append(heading, amount, count);
                 button.onclick = () => setTransactionTypeFilter(group.id);
@@ -3130,34 +3222,34 @@
         }
 
         function renderRecurringTransactions() {
-            const list = document.getElementById('recurring-transactions-list');
-            if (!list) return;
-            list.replaceChildren();
+            const tbody = document.getElementById('recurring-transactions-table-body');
+            const mobileCards = document.getElementById('recurring-transactions-mobile-cards');
+            if (!tbody || !mobileCards) return;
+            tbody.replaceChildren();
+            mobileCards.replaceChildren();
             const schedules = (currentMemberFilter === 'combined'
                 ? recurringTransactions
                 : recurringTransactions.filter(item => item.member.toLowerCase() === currentMemberFilter))
                 .slice()
                 .sort((a, b) => a.nextDueDate.localeCompare(b.nextDueDate));
             if (!schedules.length) {
-                list.className = 'mt-3 text-sm text-slate-500';
-                list.textContent = 'No recurring transactions for this view. Create one from the transaction form above.';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 6;
+                cell.className = 'py-6 text-center text-slate-500';
+                cell.textContent = 'No recurring transactions for this view. Create one from the transaction form above.';
+                row.appendChild(cell);
+                tbody.appendChild(row);
+                const emptyMessage = document.createElement('p');
+                emptyMessage.className = 'py-4 text-center text-sm text-slate-500';
+                emptyMessage.textContent = cell.textContent;
+                mobileCards.appendChild(emptyMessage);
                 return;
             }
-            list.className = 'mt-3 grid grid-cols-1 gap-3 md:grid-cols-2';
             schedules.forEach(schedule => {
-                const card = document.createElement('article');
-                card.className = 'rounded-xl border border-slate-200 p-4';
-                const header = document.createElement('div');
-                header.className = 'flex items-start justify-between gap-3';
-                const details = document.createElement('div');
-                const title = document.createElement('h4');
-                title.className = 'font-semibold text-slate-800';
                 const liability = schedule.type === 'emi'
                     ? liabilities.find(item => item.id === schedule.liabilityId)
                     : null;
-                title.textContent = schedule.description || liability?.name || schedule.category;
-                const metadata = document.createElement('p');
-                metadata.className = 'mt-1 text-xs text-slate-500';
                 const typeLabel = {
                     income: 'Income',
                     expense: 'Expense',
@@ -3165,32 +3257,86 @@
                     'transfer-in': 'Transfer in',
                     'transfer-out': 'Transfer out'
                 }[schedule.type] || schedule.type;
-                metadata.textContent = `${typeLabel}${schedule.type === 'emi' && liability ? ` · ${liability.name}` : ` · ${schedule.category}`} · ${schedule.member}`;
-                const dueDate = document.createElement('p');
-                dueDate.className = 'mt-2 text-sm text-slate-600';
-                dueDate.textContent = `Next due ${schedule.nextDueDate} · ${fmt(schedule.amount)}`;
-                details.append(title, metadata, dueDate);
-                const paidButton = document.createElement('button');
-                paidButton.type = 'button';
-                paidButton.className = 'min-h-[44px] shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700';
-                paidButton.textContent = 'Record occurrence';
-                paidButton.onclick = () => markRecurringPaid(schedule.id);
-                header.append(details, paidButton);
+                const titleText = schedule.description || liability?.name || schedule.category;
+                const categoryText = schedule.type === 'emi' && liability
+                    ? `${typeLabel} · ${liability.name}`
+                    : `${typeLabel} · ${schedule.category}`;
+                const canRecord = isRecurringScheduleDue(schedule);
                 const actions = document.createElement('div');
-                actions.className = 'mt-2 flex gap-2';
+                actions.className = 'flex flex-wrap items-center justify-end gap-2';
+                const recordButton = document.createElement('button');
+                recordButton.type = 'button';
+                recordButton.className = 'record-action-button record-action-edit text-emerald-700';
+                recordButton.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
+                recordButton.setAttribute('aria-label', `Record occurrence for ${titleText}`);
+                recordButton.disabled = !canRecord;
+                recordButton.title = canRecord ? 'Record this due occurrence' : 'Available when the due month begins';
+                recordButton.onclick = () => markRecurringPaid(schedule.id);
                 const editButton = document.createElement('button');
                 editButton.type = 'button';
-                editButton.className = 'min-h-[40px] rounded-lg px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50';
-                editButton.textContent = 'Edit';
+                editButton.className = 'record-action-button record-action-edit';
+                editButton.innerHTML = '<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>';
+                editButton.setAttribute('aria-label', `Edit recurring transaction ${titleText}`);
+                editButton.title = 'Edit';
                 editButton.onclick = () => editRecurringTransaction(schedule.id);
                 const stopButton = document.createElement('button');
                 stopButton.type = 'button';
-                stopButton.className = 'min-h-[40px] rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50';
-                stopButton.textContent = 'Stop recurring';
+                stopButton.className = 'record-action-button record-action-delete';
+                stopButton.innerHTML = '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>';
+                stopButton.setAttribute('aria-label', `Stop recurring transaction ${titleText}`);
+                stopButton.title = 'Stop recurring';
                 stopButton.onclick = () => deleteRecurringTransaction(schedule.id);
-                actions.append(editButton, stopButton);
-                card.append(header, actions);
-                list.appendChild(card);
+                const row = document.createElement('tr');
+                const titleCell = document.createElement('td');
+                titleCell.className = 'p-3 font-semibold text-slate-800';
+                titleCell.textContent = titleText;
+                const categoryCell = document.createElement('td');
+                categoryCell.className = 'p-3 text-slate-600';
+                categoryCell.textContent = categoryText;
+                const memberCell = document.createElement('td');
+                memberCell.className = 'p-3 text-slate-600';
+                memberCell.textContent = schedule.member;
+                const dueCell = document.createElement('td');
+                dueCell.className = 'p-3 text-slate-600';
+                dueCell.textContent = schedule.nextDueDate;
+                const amountCell = document.createElement('td');
+                amountCell.className = 'p-3 text-right font-mono font-semibold text-slate-800';
+                amountCell.textContent = fmt(schedule.amount);
+                const actionsCell = document.createElement('td');
+                actionsCell.className = 'p-3';
+                const rowActions = actions.cloneNode(false);
+                const rowRecordButton = recordButton.cloneNode(true);
+                rowRecordButton.onclick = () => markRecurringPaid(schedule.id);
+                const rowEditButton = editButton.cloneNode(true);
+                rowEditButton.onclick = () => editRecurringTransaction(schedule.id);
+                const rowStopButton = stopButton.cloneNode(true);
+                rowStopButton.onclick = () => deleteRecurringTransaction(schedule.id);
+                rowActions.append(rowRecordButton, rowEditButton, rowStopButton);
+                actionsCell.appendChild(rowActions);
+                row.append(titleCell, categoryCell, memberCell, dueCell, amountCell, actionsCell);
+                tbody.appendChild(row);
+
+                const card = document.createElement('article');
+                card.className = 'rounded-xl border border-slate-200 bg-white p-4 shadow-sm';
+                const title = document.createElement('h4');
+                title.className = 'font-semibold text-slate-800';
+                title.textContent = titleText;
+                const metadata = document.createElement('p');
+                metadata.className = 'mt-1 text-xs text-slate-500';
+                metadata.textContent = `${categoryText} · ${schedule.member}`;
+                const due = document.createElement('p');
+                due.className = 'mt-2 text-sm text-slate-600';
+                due.textContent = `Next due ${schedule.nextDueDate} · ${fmt(schedule.amount)}`;
+                const cardActions = actions.cloneNode(false);
+                const cardRecordButton = recordButton.cloneNode(true);
+                cardRecordButton.onclick = () => markRecurringPaid(schedule.id);
+                const cardEditButton = editButton.cloneNode(true);
+                cardEditButton.onclick = () => editRecurringTransaction(schedule.id);
+                const cardStopButton = stopButton.cloneNode(true);
+                cardStopButton.onclick = () => deleteRecurringTransaction(schedule.id);
+                cardActions.append(cardRecordButton, cardEditButton, cardStopButton);
+                card.append(title, metadata, due, cardActions);
+                mobileCards.appendChild(card);
             });
         }
 
