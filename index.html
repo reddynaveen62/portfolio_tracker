@@ -427,6 +427,11 @@
                 grid-column: 1 / -1;
             }
 
+            #liability-table-body tr:not([data-empty]) td:first-child {
+                grid-column: 1 / -1;
+                font-size: 1rem;
+            }
+
         }
     </style>
 </head>
@@ -534,8 +539,13 @@
         </section>
         <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
             <h2 class="font-bold text-slate-800">Portfolio review flags</h2>
-            <p class="mt-1 text-xs text-slate-500">Informational checks only: single holdings over 25% of recorded assets, property exposure, and valuations older than 90 days or missing a date or source.</p>
+            <p class="mt-1 text-xs text-slate-500">Informational checks only: single holdings over 25% of recorded assets, property exposure, user-set allocation ranges, and valuations older than 90 days or missing a date or source.</p>
             <div id="portfolio-risk-cards" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+            <div class="mt-3 rounded-lg border border-slate-200 p-3">
+                <h3 class="text-sm font-semibold text-slate-800">Household data coverage</h3>
+                <p class="mt-1 text-xs text-slate-500">Confirm these records are complete for the selected household view. Confirmations are cleared when related records change.</p>
+                <div id="data-coverage-checklist" class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3"></div>
+            </div>
         </section>
 
         <!-- MARKET ASSETS -->
@@ -690,6 +700,11 @@
                         <tbody id="liability-table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
+                <div class="mt-4 rounded-lg border border-slate-200 p-3">
+                    <h3 class="font-semibold text-slate-800">Extra-payment scenarios</h3>
+                    <p class="mt-1 text-xs text-slate-500">Illustrative estimates use monthly compounding, each loan’s current balance, entered rate and EMI, and a fixed rate/payment. Extra amounts are scenarios only; they do not record payments or change your loan balance.</p>
+                    <div id="debt-payoff-scenarios" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
+                </div>
             </div>
         </section>
         <div id="liability-modal" class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="liability-modal-title">
@@ -725,6 +740,9 @@
                     </label>
                     <label class="text-xs font-semibold text-slate-700">Regular monthly EMI (₹)
                         <input id="liability-emi" type="number" min="0.01" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. 25000">
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700">Extra monthly amount to model (₹)
+                        <input id="liability-extra-payment" type="number" min="0" step="0.01" value="0" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="0">
                     </label>
                     <p class="text-xs text-slate-500 sm:col-span-2 lg:col-span-3">For home, personal, vehicle, and education loans, these bank details are needed to estimate the interest portion of each payment.</p>
                     <div class="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-3">
@@ -810,13 +828,24 @@
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
                         <h4 class="text-sm font-semibold text-slate-700">Emergency-fund reference</h4>
-                        <p class="mt-1 text-xs text-slate-500">Average monthly outflow from all recorded expense categories and full EMI payments over the latest 3 calendar months, including the current month. Unpaid recurring items and transfers are excluded.</p>
+                        <p class="mt-1 text-xs text-slate-500">Average monthly outflow from all recorded expense categories and full EMI payments over the latest 3 calendar months, including the current month. Unpaid recurring items and transfers are excluded. This is a planning reference, not a prescribed reserve.</p>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <label class="text-xs font-semibold text-slate-700">Target method
+                                <select id="emergency-target-mode" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm" onchange="changeEmergencyFundMode(this.value)">
+                                    <option value="amount">Fixed amount</option>
+                                    <option value="months">Months of outflow</option>
+                                </select>
+                            </label>
+                            <label class="text-xs font-semibold text-slate-700"><span id="emergency-target-label">Target amount (₹)</span>
+                                <input id="emergency-target-value" type="number" min="0.01" step="0.01" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm" onchange="setEmergencyFundSettings()">
+                            </label>
+                        </div>
                         <div id="emergency-fund-average" class="mt-3 text-sm font-semibold text-slate-800"></div>
                         <div class="mt-2 flex flex-wrap items-center gap-2">
                             <span id="emergency-fund-status" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"></span>
                             <div id="emergency-fund-summary" class="text-sm text-slate-700"></div>
                         </div>
-                        <p class="mt-2 text-xs text-slate-500">Status: red under 3 months, amber for 3 to under 6 months, and green at 6 months or more.</p>
+                        <p class="mt-2 text-xs text-slate-500">Coverage compares recorded cash and cash assets with recent expense and EMI outflow. Verify liquidity and avoid counting the same cash twice.</p>
                     </div>
                 </div>
                 </div>
@@ -910,8 +939,31 @@
                     <button type="button" onclick="openGoalModal()" class="record-add-button record-add-indigo"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add</span></button>
                 </div>
                 <div id="goals-content" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-                    <p class="text-xs text-slate-500">Monthly amounts are simple targets based on time remaining and do not assume investment returns.</p>
+                    <p class="text-xs text-slate-500">Illustrative estimates only. Returns and inflation are uncertain. A goal amount is treated as today’s cost only when that option is selected on the goal.</p>
+                    <div class="mt-3 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 sm:max-w-xl">
+                        <label class="text-xs font-semibold text-slate-700">Estimated annual return (%)
+                            <input id="goal-return-assumption" type="number" min="0" max="100" step="0.1" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="setGoalProjectionAssumptions()">
+                        </label>
+                        <label class="text-xs font-semibold text-slate-700">Annual inflation (%)
+                            <input id="goal-inflation-assumption" type="number" min="0" max="100" step="0.1" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" onchange="setGoalProjectionAssumptions()">
+                        </label>
+                    </div>
                     <div id="goals-list" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
+                </div>
+            </section>
+            <section class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
+                    <h3>
+                        <button type="button" class="section-toggle flex w-full items-center gap-2 text-left text-base font-bold text-slate-800 sm:text-lg" aria-expanded="false" aria-controls="allocation-targets-content" onclick="toggleSection(this)">
+                            <i class="section-chevron fa-solid fa-chevron-up text-xs text-slate-500" aria-hidden="true"></i>
+                            <span><i class="fa-solid fa-sliders mr-2 text-indigo-600" aria-hidden="true"></i>Allocation review ranges</span>
+                        </button>
+                    </h3>
+                </div>
+                <div id="allocation-targets-content" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                    <p class="text-xs text-slate-500">Set optional asset-class ranges that reflect your own plan. Out-of-range flags invite review only and do not recommend trades. Shares use recorded asset values before liabilities.</p>
+                    <div id="allocation-targets-grid" class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3"></div>
+                    <button type="button" class="record-add-button record-add-indigo mt-3" onclick="saveAllocationTargets()">Save ranges</button>
                 </div>
             </section>
             <section class="space-y-3">
@@ -924,7 +976,7 @@
                     </h3>
                 </div>
                 <div id="planning-notes-content" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4">
-                    <p class="text-sm text-amber-900">Concentration and valuation-age indicators are prompts to review your data, not investment recommendations. Check current market values and loan balances against statements before relying on your net-worth estimate.</p>
+                    <p class="text-sm text-amber-900">Concentration, allocation, goal, and debt estimates are prompts to review your data, not investment or repayment recommendations. Assumptions are editable and outcomes are not guaranteed. Check current market values and loan balances against statements before relying on your net-worth estimate.</p>
                 </div>
             </section>
         </section>
@@ -1021,6 +1073,10 @@
                     </label>
                     <label class="text-xs font-semibold text-slate-700">Target date
                         <input id="goal-date" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                    </label>
+                    <label class="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-900 sm:col-span-2">
+                        <input id="goal-inflation-adjusted" type="checkbox" class="h-4 w-4 accent-indigo-600">
+                        Target amount is today’s cost; increase it for inflation
                     </label>
                     <div class="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-3">
                         <button id="goal-cancel-edit" type="button" onclick="resetGoalForm()" class="hidden min-h-[44px] rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
@@ -1123,6 +1179,10 @@
         const INCLUDE_CASH_STORAGE_KEY = 'wealthpulse_include_cash_balance';
         const LIABILITIES_STORAGE_KEY = 'wealthpulse_liabilities';
         const GOALS_STORAGE_KEY = 'wealthpulse_goals';
+        const GOAL_PROJECTION_STORAGE_KEY = 'wealthpulse_goal_projection_assumptions';
+        const EMERGENCY_FUND_SETTINGS_KEY = 'wealthpulse_emergency_fund_settings';
+        const ALLOCATION_TARGETS_STORAGE_KEY = 'wealthpulse_allocation_review_ranges';
+        const DATA_COVERAGE_REVIEWED_KEY = 'wealthpulse_data_coverage_reviewed';
 
         let portfolio = JSON.parse(localStorage.getItem('wealthpulse_portfolio')) || [
             { id: '1', name: 'Parag Parikh Flexi Cap Fund', member: 'Self', type: 'Mutual Fund', units: 1250.45, price: 78.50, currentNav: 85.20, sip: 10000 },
@@ -1140,6 +1200,10 @@
         let includeCashBalance = localStorage.getItem(INCLUDE_CASH_STORAGE_KEY) === 'true';
         let liabilities = JSON.parse(localStorage.getItem(LIABILITIES_STORAGE_KEY) || '[]');
         let financialGoals = JSON.parse(localStorage.getItem(GOALS_STORAGE_KEY) || '[]');
+        let goalProjectionAssumptions = JSON.parse(localStorage.getItem(GOAL_PROJECTION_STORAGE_KEY) || '{"annualReturnRate":8,"inflationRate":6}');
+        let emergencyFundSettings = JSON.parse(localStorage.getItem(EMERGENCY_FUND_SETTINGS_KEY) || '{"mode":"amount","value":600000,"amountValue":600000,"monthsValue":6}');
+        let allocationReviewRanges = JSON.parse(localStorage.getItem(ALLOCATION_TARGETS_STORAGE_KEY) || '{}');
+        let dataCoverageReviewed = JSON.parse(localStorage.getItem(DATA_COVERAGE_REVIEWED_KEY) || '{}');
 
         let currentMemberFilter = 'combined';
         let currentTransactionTypeFilter = 'all';
@@ -1165,7 +1229,7 @@
         };
         const LIABILITY_TYPES = ['Home loan', 'Personal loan', 'Vehicle loan', 'Education loan', 'Credit card', 'Other liability'];
         const EMERGENCY_FUND_AVERAGE_MONTHS = 3;
-        const ESSENTIAL_EXPENSE_CATEGORIES = CASHFLOW_CATEGORIES.expense;
+        const EMERGENCY_FUND_EXPENSE_CATEGORIES = CASHFLOW_CATEGORIES.expense;
 
         // ---------- Asset classes (assigned automatically, nothing to configure) ----------
         const CLASSES = [
@@ -1376,6 +1440,7 @@
             document.getElementById('liability-rate').value = '';
             document.getElementById('liability-tenure').value = '';
             document.getElementById('liability-emi').value = '';
+            document.getElementById('liability-extra-payment').value = '0';
             document.getElementById('liability-submit').innerText = 'Add liability';
             document.getElementById('liability-modal-title').textContent = 'Add liability';
             document.getElementById('liability-cancel-edit').classList.add('hidden');
@@ -1528,7 +1593,7 @@
             const fileData = await driveRequest(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(targetFileId)}?alt=media`);
             if (Array.isArray(fileData)) {
                 portfolio = fileData;
-            } else if (fileData && [2, 3, 4, 5, 6].includes(fileData.version) && Array.isArray(fileData.portfolio) && Array.isArray(fileData.transactions)) {
+            } else if (fileData && [2, 3, 4, 5, 6, 7].includes(fileData.version) && Array.isArray(fileData.portfolio) && Array.isArray(fileData.transactions)) {
                 if (fileData.cashOpeningBalances !== undefined &&
                     (!fileData.cashOpeningBalances || typeof fileData.cashOpeningBalances !== 'object' || Array.isArray(fileData.cashOpeningBalances))) {
                     throw new Error('portfolio.json contains invalid opening cash balances.');
@@ -1573,15 +1638,61 @@
                     (item.remainingTenureMonths === undefined ||
                         (Number.isInteger(Number(item.remainingTenureMonths)) && Number(item.remainingTenureMonths) >= 0)) &&
                     (item.monthlyEmi === undefined ||
-                        (Number.isFinite(Number(item.monthlyEmi)) && Number(item.monthlyEmi) > 0))
+                        (Number.isFinite(Number(item.monthlyEmi)) && Number(item.monthlyEmi) > 0)) &&
+                    (item.extraMonthlyPayment === undefined ||
+                        (Number.isFinite(Number(item.extraMonthlyPayment)) && Number(item.extraMonthlyPayment) >= 0))
                 );
                 const validGoals = Array.isArray(fileData.goals || []) && (fileData.goals || []).every(item =>
                     item && typeof item.id === 'string' && typeof item.name === 'string' &&
                     ['Self', 'Spouse', 'Household'].includes(item.member) &&
                     Number.isFinite(Number(item.target)) && Number(item.target) > 0 &&
                     Number.isFinite(Number(item.saved)) && Number(item.saved) >= 0 &&
-                    /^\d{4}-\d{2}-\d{2}$/.test(item.date)
+                    /^\d{4}-\d{2}-\d{2}$/.test(item.date) &&
+                    (item.inflationAdjusted === undefined || typeof item.inflationAdjusted === 'boolean')
                 );
+                const driveGoalAssumptions = fileData.goalProjectionAssumptions === undefined
+                    ? { annualReturnRate: 8, inflationRate: 6 }
+                    : fileData.goalProjectionAssumptions;
+                const validGoalAssumptions = driveGoalAssumptions && typeof driveGoalAssumptions === 'object' &&
+                    !Array.isArray(driveGoalAssumptions) &&
+                    ['annualReturnRate', 'inflationRate'].every(key =>
+                        Number.isFinite(Number(driveGoalAssumptions[key])) &&
+                        Number(driveGoalAssumptions[key]) >= 0 && Number(driveGoalAssumptions[key]) <= 100
+                    );
+                const driveEmergencySettings = fileData.emergencyFundSettings === undefined
+                    ? { mode: 'amount', value: 600000 }
+                    : fileData.emergencyFundSettings;
+                const validEmergencySettings = driveEmergencySettings && typeof driveEmergencySettings === 'object' &&
+                    !Array.isArray(driveEmergencySettings) &&
+                    ['amount', 'months'].includes(driveEmergencySettings.mode) &&
+                    Number.isFinite(Number(driveEmergencySettings.value)) &&
+                    Number(driveEmergencySettings.value) > 0 &&
+                    (driveEmergencySettings.mode !== 'months' || Number(driveEmergencySettings.value) <= 120) &&
+                    ['amountValue', 'monthsValue'].every(key => driveEmergencySettings[key] === undefined ||
+                        (Number.isFinite(Number(driveEmergencySettings[key])) && Number(driveEmergencySettings[key]) > 0 &&
+                            (key !== 'monthsValue' || Number(driveEmergencySettings[key]) <= 120)));
+                const driveAllocationRanges = fileData.allocationReviewRanges === undefined
+                    ? {}
+                    : fileData.allocationReviewRanges;
+                const validAllocationRanges = driveAllocationRanges && typeof driveAllocationRanges === 'object' &&
+                    !Array.isArray(driveAllocationRanges) &&
+                    Object.entries(driveAllocationRanges).every(([assetClass, range]) =>
+                        CLASSES.some(item => item.k === assetClass) &&
+                        range && typeof range === 'object' && !Array.isArray(range) &&
+                        ['min', 'max'].every(key => range[key] === undefined || range[key] === null ||
+                            (Number.isFinite(Number(range[key])) && Number(range[key]) >= 0 && Number(range[key]) <= 100)) &&
+                        (range.min === undefined || range.min === null || range.max === undefined || range.max === null ||
+                            Number(range.min) <= Number(range.max))
+                    );
+                const driveCoverageReview = fileData.dataCoverageReviewed === undefined
+                    ? {}
+                    : fileData.dataCoverageReviewed;
+                const validCoverageReview = driveCoverageReview && typeof driveCoverageReview === 'object' &&
+                    !Array.isArray(driveCoverageReview) &&
+                    Object.entries(driveCoverageReview).every(([key, date]) =>
+                        /^(assets|liabilities|cash):(combined|self|spouse)$/.test(key) &&
+                        (date === '' || isValidISODate(date))
+                    );
                 const driveRecurringTransactions = fileData.recurringTransactions === undefined
                     ? []
                     : fileData.recurringTransactions;
@@ -1630,7 +1741,9 @@
                     .filter(item => item && item.type === 'Mutual Fund')
                     .every(item => mutualFundPosition(item, todayLocalISO(), fileData.transactions).valid);
                 if (!Number.isFinite(selfOpening) || !Number.isFinite(spouseOpening) || !validTransactions ||
-                    !validFundPositions || !validLiabilities || !validGoals || !validRecurringTransactions || !validRecurringEmiLinks || !validEmiLinks ||
+                    !validFundPositions || !validLiabilities || !validGoals || !validGoalAssumptions ||
+                    !validEmergencySettings || !validAllocationRanges || !validCoverageReview ||
+                    !validRecurringTransactions || !validRecurringEmiLinks || !validEmiLinks ||
                     (fileData.includeCashBalance !== undefined && typeof fileData.includeCashBalance !== 'boolean')) {
                     throw new Error('portfolio.json contains invalid cash-flow, linked mutual-fund, liability, or opening-balance data.');
                 }
@@ -1651,6 +1764,10 @@
                 includeCashBalance = fileData.includeCashBalance === true;
                 liabilities = fileData.liabilities || [];
                 financialGoals = fileData.goals || [];
+                goalProjectionAssumptions = driveGoalAssumptions;
+                emergencyFundSettings = driveEmergencySettings;
+                allocationReviewRanges = driveAllocationRanges;
+                dataCoverageReviewed = driveCoverageReview;
                 recurringTransactions = driveRecurringTransactions;
             } else {
                 throw new Error('portfolio.json does not contain a valid portfolio.');
@@ -1674,7 +1791,7 @@
         async function saveToDrive() {
             handleAuth(async () => {
                 const fileContent = JSON.stringify({
-                    version: 6,
+                    version: 7,
                     portfolio,
                     transactions: cashflowTransactions,
                     recurringTransactions,
@@ -1682,7 +1799,11 @@
                     cashOpeningDates,
                     includeCashBalance,
                     liabilities,
-                    goals: financialGoals
+                    goals: financialGoals,
+                    goalProjectionAssumptions,
+                    emergencyFundSettings,
+                    allocationReviewRanges,
+                    dataCoverageReviewed
                 }, null, 2);
                 const existingFile = targetFileId ? null : await findPortfolioFile();
                 targetFileId = targetFileId || (existingFile && existingFile.id);
@@ -1801,7 +1922,7 @@
                 item.date <= asOfDate &&
                 item.date.slice(0, 7) >= startMonth &&
                 item.date.slice(0, 7) <= endMonth &&
-                (item.type === 'emi' || (item.type === 'expense' && ESSENTIAL_EXPENSE_CATEGORIES.includes(item.category)))
+                (item.type === 'emi' || (item.type === 'expense' && EMERGENCY_FUND_EXPENSE_CATEGORIES.includes(item.category)))
             );
             const total = entries.reduce((sum, item) => sum + Number(item.amount), 0);
             return {
@@ -1907,6 +2028,24 @@
             const lastDayOfMonth = new Date(closureDate.getFullYear(), closureDate.getMonth() + 1, 0).getDate();
             closureDate.setDate(Math.min(day, lastDayOfMonth));
             return `${closureDate.getFullYear()}-${String(closureDate.getMonth() + 1).padStart(2, '0')}-${String(closureDate.getDate()).padStart(2, '0')}`;
+        }
+
+        function simulateLoanPayoff(balance, annualInterestRate, monthlyPayment) {
+            if (!Number.isFinite(balance) || balance <= 0 ||
+                !Number.isFinite(annualInterestRate) || annualInterestRate < 0 ||
+                !Number.isFinite(monthlyPayment) || monthlyPayment <= 0) return null;
+            let remaining = balance;
+            let totalInterest = 0;
+            let months = 0;
+            while (remaining > 0.01 && months < 1200) {
+                const interest = roundCurrency(remaining * annualInterestRate / 1200);
+                if (monthlyPayment <= interest) return null;
+                const payment = Math.min(monthlyPayment, remaining + interest);
+                totalInterest = roundCurrency(totalInterest + interest);
+                remaining = roundCurrency(Math.max(0, remaining + interest - payment));
+                months += 1;
+            }
+            return remaining <= 0.01 ? { months, totalInterest } : null;
         }
 
         function periodMatches(date, periodType, value) {
@@ -2145,6 +2284,7 @@
             }
             cashOpeningBalances[member] = value;
             if (!cashOpeningDates[member]) cashOpeningDates[member] = todayLocalISO();
+            clearDataCoverageReview('cash');
             saveAndRefresh();
         }
 
@@ -2155,6 +2295,85 @@
                 return;
             }
             cashOpeningDates[member] = value;
+            clearDataCoverageReview('cash');
+            saveAndRefresh();
+        }
+
+        function setGoalProjectionAssumptions() {
+            const annualReturnRate = Number(document.getElementById('goal-return-assumption').value);
+            const inflationRate = Number(document.getElementById('goal-inflation-assumption').value);
+            if (!Number.isFinite(annualReturnRate) || annualReturnRate < 0 || annualReturnRate > 100 ||
+                !Number.isFinite(inflationRate) || inflationRate < 0 || inflationRate > 100) {
+                alert('Enter annual assumptions between 0% and 100%.');
+                renderGoalsDashboard();
+                return;
+            }
+            goalProjectionAssumptions = { annualReturnRate, inflationRate };
+            saveAndRefresh();
+        }
+
+        function setEmergencyFundSettings() {
+            const mode = document.getElementById('emergency-target-mode').value;
+            const value = Number(document.getElementById('emergency-target-value').value);
+            if (!['amount', 'months'].includes(mode) || !Number.isFinite(value) || value <= 0 ||
+                (mode === 'months' && value > 120)) {
+                alert('Enter a positive target amount or between 0 and 120 months.');
+                renderCashflowDashboard();
+                return;
+            }
+            emergencyFundSettings = { ...emergencyFundSettings, mode, value };
+            emergencyFundSettings[mode === 'months' ? 'monthsValue' : 'amountValue'] = value;
+            saveAndRefresh();
+        }
+
+        function changeEmergencyFundMode(mode) {
+            if (!['amount', 'months'].includes(mode)) throw new Error(`Unknown emergency-fund target mode: ${mode}`);
+            const value = Number(emergencyFundSettings[mode === 'months' ? 'monthsValue' : 'amountValue'] || (mode === 'amount' ? 600000 : 6));
+            emergencyFundSettings = { ...emergencyFundSettings, mode, value };
+            saveAndRefresh();
+        }
+
+        function setDataCoverageReviewed(domain, checked) {
+            const key = `${domain}:${currentMemberFilter}`;
+            dataCoverageReviewed[key] = checked ? todayLocalISO() : '';
+            saveAndRefresh();
+        }
+
+        function clearDataCoverageReview(domain) {
+            Object.keys(dataCoverageReviewed).forEach(key => {
+                if (key.startsWith(`${domain}:`)) dataCoverageReviewed[key] = '';
+            });
+        }
+
+        function saveAllocationTargets() {
+            const targets = {};
+            for (const assetClass of CLASSES) {
+                const minRaw = document.getElementById(`allocation-min-${assetClass.k}`)?.value ?? '';
+                const maxRaw = document.getElementById(`allocation-max-${assetClass.k}`)?.value ?? '';
+                const min = minRaw === '' ? null : Number(minRaw);
+                const max = maxRaw === '' ? null : Number(maxRaw);
+                if ((min !== null && (!Number.isFinite(min) || min < 0 || min > 100)) ||
+                    (max !== null && (!Number.isFinite(max) || max < 0 || max > 100)) ||
+                    (min !== null && max !== null && min > max)) {
+                    alert(`Enter valid 0–100% allocation ranges for ${assetClass.k}.`);
+                    return;
+                }
+                if (min !== null || max !== null) targets[assetClass.k] = { min, max };
+            }
+            allocationReviewRanges = targets;
+            saveAndRefresh();
+        }
+
+        function setDebtExtraPayment(id, rawValue) {
+            const value = Number(rawValue);
+            const liability = liabilities.find(item => item.id === id);
+            if (!liability) throw new Error(`Could not find liability ${id} for its payment scenario.`);
+            if (!Number.isFinite(value) || value < 0) {
+                alert('Enter an extra monthly payment of zero or more.');
+                renderLiabilities();
+                return;
+            }
+            liability.extraMonthlyPayment = value;
             saveAndRefresh();
         }
 
@@ -2175,9 +2394,11 @@
             const rateValue = document.getElementById('liability-rate').value;
             const tenureValue = document.getElementById('liability-tenure').value;
             const emiValue = document.getElementById('liability-emi').value;
+            const extraPaymentValue = document.getElementById('liability-extra-payment').value;
             const annualInterestRate = rateValue === '' ? null : Number(rateValue);
             const remainingTenureMonths = tenureValue === '' ? null : Number(tenureValue);
             const monthlyEmi = emiValue === '' ? null : Number(emiValue);
+            const extraMonthlyPayment = extraPaymentValue === '' ? 0 : Number(extraPaymentValue);
             if (!name || !Number.isFinite(balance) || balance < 0 ||
                 !/^\d{4}-\d{2}-\d{2}$/.test(date) || !['Self', 'Spouse'].includes(member) ||
                 !LIABILITY_TYPES.includes(type)) {
@@ -2193,8 +2414,9 @@
             }
             if ((annualInterestRate !== null && (!Number.isFinite(annualInterestRate) || annualInterestRate < 0 || annualInterestRate > 100)) ||
                 (remainingTenureMonths !== null && (!Number.isInteger(remainingTenureMonths) || remainingTenureMonths < 0)) ||
-                (monthlyEmi !== null && (!Number.isFinite(monthlyEmi) || monthlyEmi <= 0))) {
-                alert('Enter a valid annual interest rate, remaining tenure, and regular EMI.');
+                (monthlyEmi !== null && (!Number.isFinite(monthlyEmi) || monthlyEmi <= 0)) ||
+                !Number.isFinite(extraMonthlyPayment) || extraMonthlyPayment < 0) {
+                alert('Enter valid loan terms and an extra monthly amount of zero or more.');
                 return;
             }
             const editId = document.getElementById('liability-edit-id').value;
@@ -2203,7 +2425,8 @@
                 name, type, member, balance, date,
                 ...(annualInterestRate !== null ? { annualInterestRate } : {}),
                 ...(remainingTenureMonths !== null ? { remainingTenureMonths } : {}),
-                ...(monthlyEmi !== null ? { monthlyEmi } : {})
+                ...(monthlyEmi !== null ? { monthlyEmi } : {}),
+                extraMonthlyPayment
             };
             const index = liabilities.findIndex(item => item.id === editId);
             if (editId && index === -1) {
@@ -2252,6 +2475,7 @@
             cashflowTransactions = updatedTransactions;
             if (index >= 0) liabilities[index] = record;
             else liabilities.push(record);
+            clearDataCoverageReview('liabilities');
             resetLiabilityForm();
             saveAndRefresh();
         }
@@ -2273,6 +2497,7 @@
                 ? liabilityRemainingTenure(item)
                 : '';
             document.getElementById('liability-emi').value = item.monthlyEmi ?? '';
+            document.getElementById('liability-extra-payment').value = item.extraMonthlyPayment ?? 0;
             document.getElementById('liability-submit').innerText = 'Save changes';
             document.getElementById('liability-cancel-edit').classList.remove('hidden');
             showLiabilityModal();
@@ -2294,6 +2519,7 @@
             }
             if (!confirm('Are you sure you want to delete this liability?')) return;
             liabilities = liabilities.filter(item => item.id !== id);
+            clearDataCoverageReview('liabilities');
             saveAndRefresh();
         }
 
@@ -2302,6 +2528,55 @@
                 ? liabilities
                 : liabilities.filter(item => item.member.toLowerCase() === currentMemberFilter);
             document.getElementById('liability-total').textContent = fmt(memberLiabilities.reduce((total, item) => total + liabilityBalanceAsOf(item), 0));
+            const scenarios = document.getElementById('debt-payoff-scenarios');
+            scenarios.replaceChildren();
+            const eligibleLoans = memberLiabilities.filter(item =>
+                isAmortizingLoanType(item.type) && Number.isFinite(Number(item.annualInterestRate)) &&
+                Number.isFinite(Number(item.monthlyEmi)) && Number(item.monthlyEmi) > 0
+            );
+            if (!eligibleLoans.length) {
+                const note = document.createElement('p');
+                note.className = 'text-sm text-slate-500';
+                note.textContent = 'Add a loan with an interest rate and regular EMI to see an estimate.';
+                scenarios.appendChild(note);
+            }
+            eligibleLoans.forEach(item => {
+                const balance = liabilityBalanceAsOf(item);
+                const regularPayment = Number(item.monthlyEmi);
+                const extraPayment = Number(item.extraMonthlyPayment || 0);
+                const baseline = simulateLoanPayoff(balance, Number(item.annualInterestRate), regularPayment);
+                const accelerated = simulateLoanPayoff(balance, Number(item.annualInterestRate), regularPayment + extraPayment);
+                const card = document.createElement('article');
+                card.className = 'rounded-lg border border-slate-200 p-3';
+                const title = document.createElement('h4');
+                title.className = 'font-semibold text-slate-800';
+                title.textContent = item.name;
+                const inputLabel = document.createElement('label');
+                inputLabel.className = 'mt-2 block text-xs font-semibold text-slate-700';
+                inputLabel.textContent = 'Extra monthly payment to model (₹)';
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.step = '0.01';
+                input.value = String(extraPayment);
+                input.className = 'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm';
+                input.setAttribute('aria-label', `Extra monthly payment scenario for ${item.name}`);
+                input.onchange = () => setDebtExtraPayment(item.id, input.value);
+                inputLabel.appendChild(input);
+                const summary = document.createElement('p');
+                summary.className = 'mt-2 text-sm text-slate-600';
+                if (!baseline || !accelerated) {
+                    summary.textContent = 'Not estimated: the regular payment may not cover monthly interest, or the balance/terms need review.';
+                } else {
+                    const monthsSaved = baseline.months - accelerated.months;
+                    const interestSaved = baseline.totalInterest - accelerated.totalInterest;
+                    summary.textContent = extraPayment > 0
+                        ? `Regular-payment estimate: ${baseline.months} months, ${fmt(baseline.totalInterest)} interest. With extra payment: ${accelerated.months} months, ${fmt(accelerated.totalInterest)} interest (${monthsSaved} months and ${fmt(Math.max(0, interestSaved))} interest difference).`
+                        : `At the regular EMI: about ${baseline.months} months and ${fmt(baseline.totalInterest)} future interest.`;
+                }
+                card.append(title, inputLabel, summary);
+                scenarios.appendChild(card);
+            });
             const tbody = document.getElementById('liability-table-body');
             tbody.replaceChildren();
             if (!memberLiabilities.length) {
@@ -2326,7 +2601,16 @@
                     const cell = document.createElement('td');
                     cell.dataset.label = label;
                     cell.className = 'p-3 text-slate-700';
-                    cell.textContent = text;
+                    if (label === 'Member') {
+                        const badge = document.createElement('span');
+                        badge.className = `px-2 py-0.5 text-xs font-semibold rounded-full ${
+                            item.member === 'Self' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                        }`;
+                        badge.textContent = text;
+                        cell.appendChild(badge);
+                    } else {
+                        cell.textContent = text;
+                    }
                     row.appendChild(cell);
                 });
                 const actions = document.createElement('td');
@@ -2382,13 +2666,14 @@
             const saved = Number(document.getElementById('goal-saved').value);
             const date = document.getElementById('goal-date').value;
             const member = document.getElementById('goal-member').value;
+            const inflationAdjusted = document.getElementById('goal-inflation-adjusted').checked;
             if (!name || !Number.isFinite(target) || target <= 0 || !Number.isFinite(saved) || saved < 0 ||
                 !/^\d{4}-\d{2}-\d{2}$/.test(date) || !['Self', 'Spouse', 'Household'].includes(member)) {
                 alert('Enter a valid goal name, member, target, saved amount, and date.');
                 return;
             }
             const editId = document.getElementById('goal-edit-id').value;
-            const record = { id: editId || `goal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name, member, target, saved, date };
+            const record = { id: editId || `goal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name, member, target, saved, date, inflationAdjusted };
             const index = financialGoals.findIndex(item => item.id === editId);
             if (editId && index === -1) {
                 alert('This goal could not be found. Refresh the page and try again.');
@@ -2412,6 +2697,7 @@
             document.getElementById('goal-target').value = goal.target;
             document.getElementById('goal-saved').value = goal.saved;
             document.getElementById('goal-date').value = goal.date;
+            document.getElementById('goal-inflation-adjusted').checked = goal.inflationAdjusted === true;
             document.getElementById('goal-submit').innerText = 'Save changes';
             document.getElementById('goal-modal-title').textContent = `Edit ${goal.name}`;
             document.getElementById('goal-cancel-edit').classList.remove('hidden');
@@ -2432,6 +2718,8 @@
         }
 
         function renderGoalsDashboard() {
+            document.getElementById('goal-return-assumption').value = goalProjectionAssumptions.annualReturnRate;
+            document.getElementById('goal-inflation-assumption').value = goalProjectionAssumptions.inflationRate;
             const list = document.getElementById('goals-list');
             if (!list) return;
             list.replaceChildren();
@@ -2484,14 +2772,37 @@
                 const today = new Date(`${todayLocalISO()}T00:00:00`);
                 const targetDate = new Date(`${goal.date}T00:00:00`);
                 const monthsRemaining = Math.max(0, (targetDate.getFullYear() - today.getFullYear()) * 12 + targetDate.getMonth() - today.getMonth());
-                const monthlyTarget = remaining > 0 ? monthsRemaining > 0 ? remaining / monthsRemaining : null : 0;
+                const validProjectionHorizon = monthsRemaining <= 1200;
+                const annualReturn = Number(goalProjectionAssumptions.annualReturnRate) / 100;
+                const monthlyReturn = Math.pow(1 + annualReturn, 1 / 12) - 1;
+                const annualInflation = Number(goalProjectionAssumptions.inflationRate) / 100;
+                const futureTarget = validProjectionHorizon
+                    ? goal.inflationAdjusted === true
+                        ? Number(goal.target) * Math.pow(1 + annualInflation, monthsRemaining / 12)
+                        : Number(goal.target)
+                    : NaN;
+                const futureSaved = validProjectionHorizon
+                    ? Number(goal.saved) * Math.pow(1 + monthlyReturn, monthsRemaining)
+                    : NaN;
+                const contributionFactor = monthlyReturn === 0
+                    ? monthsRemaining
+                    : (Math.pow(1 + monthlyReturn, monthsRemaining) - 1) / monthlyReturn;
+                const projectedGap = futureTarget - futureSaved;
+                const monthlyTarget = projectedGap > 0 && monthsRemaining > 0
+                    ? Math.max(0, (futureTarget - futureSaved) / contributionFactor)
+                    : projectedGap <= 0 ? 0 : null;
                 const summary = document.createElement('p');
                 summary.className = 'mt-2 text-sm text-slate-600';
-                summary.textContent = `${fmt(goal.saved)} of ${fmt(goal.target)} (${progress.toFixed(0)}%). ${
-                    remaining === 0 ? 'Target reached.' :
-                    monthsRemaining === 0 ? `${fmt(remaining)} remains; target date is due or past.` :
-                    `${fmt(remaining)} remaining; save about ${fmt(monthlyTarget)} per month, assuming no returns.`
-                }`;
+                const fundingSummary = !validProjectionHorizon
+                    ? 'Projection is not shown for a target more than 100 years away.'
+                    : projectedGap <= 0
+                    ? 'Goal appears funded under these assumptions.'
+                    : monthsRemaining === 0
+                        ? `${fmt(remaining)} remains; the target date is due or past.`
+                        : goal.inflationAdjusted === true
+                            ? `Today's-cost target ${fmt(goal.target)} projects to ${fmt(futureTarget)} by the target date. Estimated contribution ${fmt(monthlyTarget)} per month using ${goalProjectionAssumptions.annualReturnRate}% annual return and ${goalProjectionAssumptions.inflationRate}% inflation.`
+                            : `${fmt(remaining)} remains. Estimated contribution ${fmt(monthlyTarget)} per month using ${goalProjectionAssumptions.annualReturnRate}% annual return.`;
+                summary.textContent = `${fmt(goal.saved)} of ${fmt(goal.target)} (${progress.toFixed(0)}%). ${fundingSummary}`;
                 card.append(heading, bar, summary);
                 list.appendChild(card);
             });
@@ -2687,6 +2998,7 @@
             } else {
                 cashflowTransactions.push(transaction);
             }
+            clearDataCoverageReview('cash');
             resetCashflowForm();
             saveAndRefresh();
         }
@@ -2791,6 +3103,7 @@
                 }
             }
             cashflowTransactions.push(transaction);
+            clearDataCoverageReview('cash');
             schedule.nextDueDate = addMonthsToISODate(schedule.nextDueDate, 1, Number(schedule.dayOfMonth));
             if (document.getElementById('cashflow-recurring-edit-id').value === id) {
                 document.getElementById('cashflow-date').value = schedule.nextDueDate;
@@ -2829,6 +3142,7 @@
             }
             restoreRecurringScheduleForDeletedTransaction(transaction);
             cashflowTransactions = proposedTransactions;
+            clearDataCoverageReview('cash');
             saveAndRefresh();
         }
 
@@ -2952,29 +3266,42 @@
             const liquidCash = liquidAssets + summary.balance;
             const emergencyExpenseAverage = emergencyFundExpenseAverage();
             const monthlyEssentials = emergencyExpenseAverage.monthlyAverage;
-            const emergencyTarget = monthlyEssentials * 6;
+            const emergencyTargetMode = emergencyFundSettings.mode === 'months' ? 'months' : 'amount';
+            const configuredTarget = Number(emergencyFundSettings.value);
+            const emergencyTarget = emergencyTargetMode === 'months'
+                ? monthlyEssentials * configuredTarget
+                : configuredTarget;
             const emergencyMonths = monthlyEssentials > 0 ? liquidCash / monthlyEssentials : null;
+            document.getElementById('emergency-target-mode').value = emergencyTargetMode;
+            document.getElementById('emergency-target-label').textContent =
+                emergencyTargetMode === 'months' ? 'Target months' : 'Target amount (₹)';
+            document.getElementById('emergency-target-value').value = configuredTarget;
+            document.getElementById('emergency-target-value').max = emergencyTargetMode === 'months' ? '120' : '';
             document.getElementById('emergency-fund-average').textContent =
                 `Average monthly outflow: ${fmt(monthlyEssentials)} (${emergencyExpenseAverage.startMonth} to ${emergencyExpenseAverage.endMonth}; ${emergencyExpenseAverage.transactionCount} transactions).`;
             const emergencyStatus = document.getElementById('emergency-fund-status');
-            if (emergencyExpenseAverage.transactionCount === 0 || emergencyMonths === null) {
+            const targetRatio = emergencyTarget > 0 ? liquidCash / emergencyTarget : null;
+            if (targetRatio === null ||
+                (emergencyTargetMode === 'months' &&
+                    (emergencyExpenseAverage.transactionCount === 0 || monthlyEssentials <= 0))) {
                 emergencyStatus.textContent = 'Not enough data';
                 emergencyStatus.className = 'inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700';
-            } else if (emergencyMonths < 3) {
-                emergencyStatus.textContent = 'Needs attention';
+            } else if (targetRatio < 0.75) {
+                emergencyStatus.textContent = 'Below target';
                 emergencyStatus.className = 'inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-800';
-            } else if (emergencyMonths < 6) {
-                emergencyStatus.textContent = 'Building reserve';
+            } else if (targetRatio < 1) {
+                emergencyStatus.textContent = 'Near target';
                 emergencyStatus.className = 'inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800';
             } else {
-                emergencyStatus.textContent = 'On track';
+                emergencyStatus.textContent = 'Target met';
                 emergencyStatus.className = 'inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800';
             }
-            document.getElementById('emergency-fund-summary').textContent = emergencyExpenseAverage.transactionCount > 0
-                ? `Six-month target: ${fmt(emergencyTarget)}. Liquid cash: ${fmt(liquidCash)}${
-                    emergencyMonths === null ? '.' : ` (${Math.max(0, emergencyMonths).toFixed(1)} months covered).`
-                } Cash balance is included here; avoid duplicating it in asset records.`
-                : 'No expense or paid EMI transactions were found in this 3-month window, so an emergency-fund target cannot be estimated yet.';
+            document.getElementById('emergency-fund-summary').textContent =
+                `${emergencyTargetMode === 'months' ? `${configuredTarget} months` : 'Fixed-amount'} reference: ${fmt(emergencyTarget)}. Liquid cash: ${fmt(liquidCash)}${
+                    emergencyMonths === null ? ' (recent outflow coverage unavailable).' : ` (${Math.max(0, emergencyMonths).toFixed(1)} months of recent outflow).`
+                }${Math.max(0, emergencyTarget - liquidCash) > 0 ? ` Difference to reference: ${fmt(Math.max(0, emergencyTarget - liquidCash))}.` : ''} Cash balance is included here; avoid duplicating it in asset records.${
+                    emergencyExpenseAverage.transactionCount === 0 ? ' No expenses or paid EMIs were recorded in the averaging window.' : ''
+                }`;
 
             renderTransactionCards();
         }
@@ -3349,6 +3676,10 @@
             localStorage.setItem(INCLUDE_CASH_STORAGE_KEY, String(includeCashBalance));
             localStorage.setItem(LIABILITIES_STORAGE_KEY, JSON.stringify(liabilities));
             localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(financialGoals));
+            localStorage.setItem(GOAL_PROJECTION_STORAGE_KEY, JSON.stringify(goalProjectionAssumptions));
+            localStorage.setItem(EMERGENCY_FUND_SETTINGS_KEY, JSON.stringify(emergencyFundSettings));
+            localStorage.setItem(ALLOCATION_TARGETS_STORAGE_KEY, JSON.stringify(allocationReviewRanges));
+            localStorage.setItem(DATA_COVERAGE_REVIEWED_KEY, JSON.stringify(dataCoverageReviewed));
             renderDashboard();
             renderCashflowDashboard();
         }
@@ -3484,6 +3815,8 @@
             updateCharts(classVal, selfNet, spouseNet);
             renderLiabilities();
             renderPortfolioRisk(filtered, positiveAssetsTotal);
+            renderDataCoverageChecklist();
+            renderAllocationTargetsEditor();
             renderGoalsDashboard();
         }
 
@@ -3556,7 +3889,83 @@
             );
             card('Valuation freshness', needsReview.length
                 ? `${needsReview.length} of ${items.length} values need a date/source review${names.length ? `: ${names.join('; ')}` : ''}. Update asset records after checking statements.`
-                : `All ${items.length} asset values have dates within the last 90 days.`, needsReview.length ? 'amber' : 'emerald');
+                : `All ${items.length} asset values have a source and a valuation date within the last 90 days.`, needsReview.length ? 'amber' : 'emerald');
+            const configuredRanges = Object.entries(allocationReviewRanges)
+                .filter(([assetClass]) => CLASSES.some(item => item.k === assetClass));
+            if (!configuredRanges.length) {
+                card('Allocation ranges', 'No personal review ranges are set. Add optional ranges in Planning when you have a target allocation to compare.');
+            } else {
+                const outOfRange = configuredRanges.flatMap(([assetClass, range]) => {
+                    const value = pctOf(Math.max(0, items
+                        .filter(item => classOf(item) === assetClass)
+                        .reduce((sum, item) => sum + calc(item).cur, 0)), grossAssets);
+                    return (range.min !== null && value < range.min) || (range.max !== null && value > range.max)
+                        ? [`${assetClass}: ${value.toFixed(1)}% (range ${range.min ?? '—'}–${range.max ?? '—'}%)`]
+                        : [];
+                });
+                card('Allocation ranges', outOfRange.length
+                    ? `${outOfRange.join('; ')}. Review against your own plan; this is not a trade recommendation.`
+                    : `All ${configuredRanges.length} configured asset-class ranges are currently met.`, outOfRange.length ? 'amber' : 'emerald');
+            }
+        }
+
+        function renderDataCoverageChecklist() {
+            const container = document.getElementById('data-coverage-checklist');
+            const memberMatches = member => currentMemberFilter === 'combined' || member.toLowerCase() === currentMemberFilter;
+            const coverageItems = [
+                { id: 'assets', label: 'Assets and valuations', count: portfolio.filter(item => memberMatches(item.member)).length },
+                { id: 'liabilities', label: 'Loans and other debts', count: liabilities.filter(item => memberMatches(item.member)).length },
+                {
+                    id: 'cash',
+                    label: 'Cash accounts and activity',
+                    count: cashflowTransactions.filter(item => memberMatches(item.member)).length +
+                        portfolio.filter(item => memberMatches(item.member) && classOf(item) === 'Cash').length
+                }
+            ];
+            container.replaceChildren();
+            coverageItems.forEach(item => {
+                const key = `${item.id}:${currentMemberFilter}`;
+                const wrapper = document.createElement('label');
+                wrapper.className = 'flex min-w-0 items-start gap-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-700';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'mt-0.5 h-4 w-4 shrink-0 accent-indigo-600';
+                checkbox.checked = Boolean(dataCoverageReviewed[key]);
+                checkbox.onchange = () => setDataCoverageReviewed(item.id, checkbox.checked);
+                const text = document.createElement('span');
+                text.className = 'min-w-0';
+                text.textContent = `${item.label}: ${item.count} records · ${dataCoverageReviewed[key] ? `reviewed ${dataCoverageReviewed[key]}` : 'not yet confirmed'}`;
+                wrapper.append(checkbox, text);
+                container.appendChild(wrapper);
+            });
+        }
+
+        function renderAllocationTargetsEditor() {
+            const container = document.getElementById('allocation-targets-grid');
+            container.replaceChildren();
+            CLASSES.forEach(assetClass => {
+                const range = allocationReviewRanges[assetClass.k] || {};
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-[minmax(0,1fr)_1fr_1fr] items-center gap-2 rounded-lg bg-slate-50 p-2';
+                const name = document.createElement('span');
+                name.className = 'text-xs font-semibold text-slate-700';
+                name.textContent = assetClass.k;
+                row.appendChild(name);
+                [['Min %', 'min'], ['Max %', 'max']].forEach(([label, bound]) => {
+                    const input = document.createElement('input');
+                    input.id = `allocation-${bound}-${assetClass.k}`;
+                    input.type = 'number';
+                    input.min = '0';
+                    input.max = '100';
+                    input.step = '0.1';
+                    input.value = range[bound] === null || range[bound] === undefined ? '' : String(range[bound]);
+                    input.placeholder = label;
+                    input.setAttribute('aria-label', `${label} ${assetClass.k} allocation`);
+                    input.className = 'min-w-0 w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs';
+                    row.appendChild(input);
+                });
+                container.appendChild(row);
+            });
         }
 
         function updateCharts(classVal, self, spouse) {
@@ -3741,7 +4150,10 @@
                 const results = await navRefreshPromise;
                 const updated = results.filter(result => result.success).length;
                 const failed = results.length - updated;
-                if (updated) saveAndRefresh();
+                if (updated) {
+                    clearDataCoverageReview('assets');
+                    saveAndRefresh();
+                }
                 status.textContent = failed
                     ? `${updated} NAV${updated === 1 ? '' : 's'} updated; ${failed} failed. See console for details.`
                     : `${updated} NAV${updated === 1 ? '' : 's'} updated from MFAPI.`;
@@ -3813,6 +4225,8 @@
             } else {
                 portfolio.push({ id: Date.now().toString(), ...fields });
             }
+            clearDataCoverageReview('assets');
+            if (classOf(fields) === 'Cash' || (existingAsset && classOf(existingAsset) === 'Cash')) clearDataCoverageReview('cash');
             saveAndRefresh();
             closeAddModal();
         }
@@ -3823,7 +4237,10 @@
                 return;
             }
             if (confirm('Are you sure you want to remove this asset?')) {
+                const asset = portfolio.find(item => item.id === id);
                 portfolio = portfolio.filter(item => item.id !== id);
+                clearDataCoverageReview('assets');
+                if (asset && classOf(asset) === 'Cash') clearDataCoverageReview('cash');
                 saveAndRefresh();
             }
         }
@@ -3874,6 +4291,7 @@
                         } else {
                             portfolio = portfolio.concat(newAssets);
                         }
+                        clearDataCoverageReview('assets');
                         saveAndRefresh();
                         alert(`Mutual funds updated successfully for ${selectedMember}!`);
                     } else { alert('Could not find any valid fund rows in the file.'); }
